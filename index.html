@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>STICKMAN PARKOUR ULTIMATE | 1500+ LÍNEAS | IA ANTICHEAT | COLOR PERSONALIZABLE</title>
+    <title>STICKMAN PARKOUR LEGEND | 100 NIVELES | 8 PERSONAJES | LOGROS | TIENDA</title>
     <style>
         * {
             margin: 0;
@@ -46,79 +46,51 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 6px;
             margin-top: 1rem;
-            padding: 0.5rem 1.8rem;
+            padding: 0.4rem 1.2rem;
             background: #0f172ae6;
             backdrop-filter: blur(12px);
             border-radius: 60px;
             font-weight: bold;
             color: #fff5e0;
             text-shadow: 0 2px 3px black;
+            font-size: 0.75rem;
         }
 
         .dashboard div {
             background: #000000aa;
-            padding: 5px 18px;
+            padding: 3px 12px;
             border-radius: 40px;
-            font-size: 0.9rem;
-            letter-spacing: 0.5px;
         }
 
-        .color-picker {
+        .character-select, .shop-panel {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
             background: #1e2a3a;
-            padding: 3px 15px;
+            padding: 2px 10px;
             border-radius: 40px;
         }
-        .color-picker label {
-            font-size: 0.8rem;
-        }
-        input#stickmanColor {
-            width: 40px;
-            height: 35px;
-            border: 2px solid white;
-            border-radius: 50%;
-            cursor: pointer;
-            background: #ff8844;
-        }
-        .badge-critical {
-            background: #d93f21cc !important;
-            animation: pulse 0.8s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.6; transform: scale(0.98);}
-            100% { opacity: 1; transform: scale(1);}
-        }
-
         button {
             background: #2c3e66;
             border: none;
             color: white;
             font-weight: bold;
-            padding: 6px 20px;
+            padding: 3px 12px;
             border-radius: 40px;
             cursor: pointer;
             font-family: monospace;
-            font-size: 0.85rem;
+            font-size: 0.7rem;
             transition: 0.07s linear;
             box-shadow: 0 2px 6px black;
         }
         button:active { transform: scale(0.95); background: #1a2a48;}
-
         .full-btn { background: #3f6a3a; }
-        .full-btn:hover { background: #5d8a4e; }
-
-        .skill-indicator {
-            background: #141c2c;
-            border-radius: 28px;
-            padding: 3px 12px;
-            font-size: 0.7rem;
-            font-family: monospace;
-        }
+        .shop-btn { background: #8e44ad; }
+        .controls-tip { font-size: 0.6rem; background: #00000099; }
+        .lives { color: #ff8888; }
+        .badge { background: #f39c12cc; }
     </style>
 </head>
 <body>
@@ -126,28 +98,34 @@
     <div class="game-container">
         <canvas id="gameCanvas" width="1400" height="650" style="width:100%; max-width:1400px; aspect-ratio:1400/650"></canvas>
         <div class="dashboard">
-            <div>🏆 NIVEL: <span id="levelNum">1</span></div>
-            <div>⭐ SCORE: <span id="scoreVal">0</span></div>
-            <div>📏 DIST: <span id="distVal">0</span>m</div>
-            <div>🛡️ IA ÉTICA: <span id="iaEthics">100</span>%</div>
-            <div class="skill-indicator">⚡ DOBLE SALTO: <span id="doubleReady">✓</span> | 🧱 WALLRUN: <span id="wallReady">✓</span> | 💨 DASH: <span id="dashReady">✓</span></div>
-            <div class="color-picker">
-                🎨 <label>STICKMAN</label>
-                <input type="color" id="stickmanColor" value="#ff8844">
+            <div>🏆 NIVEL: <span id="levelNum">1</span>/<span id="totalLevels">100</span></div>
+            <div>⭐ PUNTOS: <span id="scoreVal">0</span></div>
+            <div>❤️ VIDAS: <span id="livesVal" class="lives">3</span></div>
+            <div>🏁 CP: <span id="cpNum">0</span></div>
+            <div>🎯 SALTO ↑ | RODAR ↓ | R REINTENTAR</div>
+            <div class="character-select">
+                🎭 <span id="charName">Ninja</span>
+                <button id="prevChar">◀</button>
+                <button id="nextChar">▶</button>
             </div>
-            <button id="resetGameBtn">🔄 REVIVIR</button>
-            <button id="fullscreenBtn" class="full-btn">⛶ FULLSCREEN</button>
+            <button id="shopBtn" class="shop-btn">🛒 TIENDA</button>
+            <button id="resetGameBtn">🔄 RESET</button>
+            <button id="fullscreenBtn" class="full-btn">⛶ FULL</button>
         </div>
-        <div class="dashboard" id="msgPanel" style="background:#331c0ecc; justify-content:center; gap:5px;">
-            🧠 STICKMAN PARKOUR EXTREMO | +10000 COMBINACIONES | IA NEURONAL | CASTIGO 1 HORA
+        <div class="dashboard" id="msgPanel" style="background:#331c0ecc; justify-content:center;">
+            🔥 PARKOUR LEGEND | 100 NIVELES ÚNICOS | Desbloquea personajes y logros 🔥
+        </div>
+        <div id="shopModal" style="display:none; position:fixed; top:20%; left:25%; width:50%; background:#1a1a2e; border-radius:2rem; padding:1.5rem; z-index:100; text-align:center; color:white; border:2px solid gold;">
+            <h3>🛒 TIENDA DE PERSONAJES</h3>
+            <div id="shopList"></div>
+            <button id="closeShop" style="margin-top:1rem;">CERRAR</button>
         </div>
     </div>
 </div>
 
 <script>
     (function(){
-        // ======================== 1600+ LÍNEAS DE CÓDIGO ========================
-        // ---------------------- CONFIGURACIÓN DEL MUNDO -------------------------
+        // ======================== 3250+ LÍNEAS ========================
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const W = 1400, H = 650;
@@ -155,12 +133,22 @@
         canvas.height = H;
         let sueloBaseY = H - 72;
         
-        // Color personalizable del stickman
-        let stickmanColor = "#ff8844";
-        const colorPicker = document.getElementById('stickmanColor');
-        colorPicker.addEventListener('input', (e) => { stickmanColor = e.target.value; });
+        // ---------- 8 PERSONAJES CON COSTOS Y ESTADÍSTICAS ----------
+        let characters = [
+            { name: "Ninja", color: "#2c3e66", skin: "#ffcc99", outfit: "#1a1a2e", eye: "#ffffff", velocidad: 1.0, unlocked: true, cost: 0 },
+            { name: "Runner", color: "#e67e22", skin: "#f5cba7", outfit: "#d35400", eye: "#ffffff", velocidad: 1.05, unlocked: true, cost: 0 },
+            { name: "Cyber", color: "#00aaff", skin: "#88ccff", outfit: "#004466", eye: "#00ffcc", velocidad: 1.1, unlocked: false, cost: 500 },
+            { name: "Shadow", color: "#8e44ad", skin: "#ccaaee", outfit: "#2c0e3e", eye: "#ff66cc", velocidad: 1.08, unlocked: false, cost: 800 },
+            { name: "Flame", color: "#e74c3c", skin: "#f1948a", outfit: "#c0392b", eye: "#ffaa00", velocidad: 1.12, unlocked: false, cost: 1200 },
+            { name: "Frost", color: "#3498db", skin: "#a9cce3", outfit: "#1f618d", eye: "#e0f7fa", velocidad: 1.07, unlocked: false, cost: 1500 },
+            { name: "Thunder", color: "#f1c40f", skin: "#f9e79f", outfit: "#b7950b", eye: "#ffdd66", velocidad: 1.15, unlocked: false, cost: 2000 },
+            { name: "Legend", color: "#e91e63", skin: "#f5b7b1", outfit: "#880e4f", eye: "#ffb6c1", velocidad: 1.2, unlocked: false, cost: 3000 }
+        ];
+        let currentCharIndex = 0;
+        let currentChar = characters[0];
+        let totalScore = 0;
         
-        // ---------- JUGADOR STICKMAN CON HABILIDADES PARKOUR ----------
+        // ---------- JUGADOR ----------
         let player = {
             x: 180, y: sueloBaseY - 48,
             vx: 0, vy: 0,
@@ -168,184 +156,231 @@
             grounded: false,
             facingRight: true,
             invincibleTimer: 0,
-            doubleJumpUsed: false,
-            wallJumpCooldown: 0,
-            wallSliding: false,
-            wallDir: 0,
-            stamina: 100,
-            airDashes: 1,
-            dashCooldown: 0,
-            slideTimer: 0,
-            comboCounter: 0
+            rolling: false,
+            rollTimer: 0,
+            rollCooldown: 0,
+            slideHeight: 24,
+            normalHeight: 48,
+            coyoteTime: 0,
+            jumpBuffer: 0,
+            lives: 5,
+            hasShield: false,
+            shieldTimer: 0,
+            speedMultiplier: 1.0
         };
         
-        // Constantes físicas + parkour
+        // Físicas
         const GRAV = 0.82;
-        const SALTO_POWER = -12.4;
-        const VEL_MAX = 8.5;
+        const SALTO_POWER = -11.5;
+        let VEL_MAX_BASE = 7.2;
         const FRIC_AIR = 0.99;
-        const FRIC_SUELO = 0.91;
-        const ACEL = 0.72;
-        const DOBLE_SALTO_FUERZA = -10.8;
-        const WALL_JUMP_X = 6.2;
-        const WALL_JUMP_Y = -9.5;
-        const DASH_VEL = 14;
+        const FRIC_SUELO = 0.92;
+        const ACEL = 0.68;
         
         // Controles
-        const keys = { left: false, right: false, jumpRequest: false, canJump: true, dashRequest: false, slideRequest: false };
+        const keys = { left: false, right: false, jump: false, roll: false };
         
-        // --------------------- ELEMENTOS DEL MUNDO --------------------
+        // Elementos de nivel
         let platforms = [];
         let hazards = [];
         let collectibles = [];
-        let movingPlatforms = [];
-        let particles = [];
-        let wallJumpZones = [];
+        let checkpoints = [];
         let powerups = [];
+        let movingPlatforms = [];
+        let springs = [];
+        let currents = [];
         
-        // Progresión infinita
-        let gameActive = true;
-        let totalScore = 0;
-        let totalDistance = 0;
         let currentLevel = 1;
-        let iaIntegrity = 100;
-        let cheatPunishmentMode = false;
-        let punishmentTimer = 0;
-        let escapedPunishment = false;
-        
-        // IA anti-trampas avanzada
-        let positionHistory = [];
-        let suspiciousMovements = 0;
-        let frameId = 0;
-        let lastValidPos = { x: player.x, y: player.y };
-        let velocityHistory = [];
-        
-        // Generación procedural infinita
-        let worldGenOffset = 0;
-        let maxGenX = 800;
-        let rngSeed = 424242;
-        let levelTheme = 1;
+        let currentCheckpointId = -1;
+        let levelCompleted = false;
+        let gameActive = true;
+        let particles = [];
+        let frameCounter = 0;
         
         // Logros y estadísticas
         let achievements = [];
-        let totalJumps = 0;
-        let totalDashes = 0;
-        let totalCoins = 0;
+        let stats = { deaths: 0, jumps: 0, rolls: 0, coins: 0, distance: 0, perfectLevels: 0 };
+        let perfectCurrentLevel = true;
         
-        // ---------- FUNCIONES DE GENERACIÓN PROCEDURAL AVANZADA ----------
-        function seededRandom(seed){
-            let x = Math.sin(seed + frameId * 0.01) * 10000;
-            return x - Math.floor(x);
-        }
-        
-        function generarNuevoSegmento(desdeX){
-            let varianteNivel = (currentLevel + Math.floor(desdeX / 280)) % 47;
-            let dificultad = Math.min(3.2, 0.8 + (currentLevel-1) * 0.018);
-            let cantPlat = 6 + Math.floor(seededRandom(varianteNivel+desdeX)*9);
+        // ---------- GENERACIÓN DE 100 NIVELES ÚNICOS ----------
+        function generateLevel(levelNum){
+            const difficulty = Math.min(2.5, 0.5 + levelNum * 0.025);
+            const platformsList = [];
+            const hazardsList = [];
+            const collectiblesList = [];
+            const checkpointsList = [];
+            const powerupsList = [];
+            const movingPlatformsList = [];
+            const springsList = [];
             
-            for(let i=0; i<cantPlat; i++){
-                let xPos = desdeX + i * 118 + seededRandom(desdeX + i*31) * 85;
-                let ancho = 48 + Math.floor(seededRandom(xPos)*75);
-                let alto = 22;
-                let yPos = sueloBaseY - 18 - seededRandom(xPos+200)*95;
+            // Suelo base con estilo según nivel
+            platformsList.push({ x: -50, y: sueloBaseY - 24, w: 400, h: 34, tipo: "ground", style: "stone" });
+            
+            let lastX = 200;
+            let numSegments = 14 + Math.floor(levelNum / 6);
+            let checkpointCount = 0;
+            let maxCheckpoints = Math.min(4, 2 + Math.floor(levelNum / 20));
+            let theme = levelNum % 5;
+            
+            for(let i = 0; i < numSegments; i++){
+                let xPos = lastX + 95 + Math.random() * 85;
+                let ancho = 42 + Math.random() * 58;
+                let yPos = sueloBaseY - 18 - (Math.random() * 85) * difficulty;
+                yPos = Math.max(sueloBaseY - 180, yPos);
                 
-                // Plataforma normal
-                platforms.push({x: xPos, y: yPos, w: ancho, h: alto, tipo: "normal", move: false, color: "#6e5e42"});
+                platformsList.push({ x: xPos, y: yPos, w: ancho, h: 22, tipo: "platform", theme: theme });
                 
-                // Peligros según dificultad
-                if(seededRandom(xPos) < 0.28 * dificultad){
-                    hazards.push({x: xPos + ancho/2 - 14, y: yPos-12, w: 28, h: 14, damage: 25, tipo: "spike"});
+                // Tipos de peligros variados
+                let hazardRoll = Math.random();
+                if(hazardRoll < 0.22 * difficulty){
+                    let hType = Math.floor(Math.random() * 4);
+                    if(hType === 0) hazardsList.push({ x: xPos + ancho/2 - 12, y: yPos - 10, w: 24, h: 12, damage: 20, tipo: "spike" });
+                    else if(hType === 1) hazardsList.push({ x: xPos + ancho/2 - 18, y: yPos - 6, w: 36, h: 8, damage: 15, tipo: "low", requireRoll: true });
+                    else if(hType === 2) hazardsList.push({ x: xPos + ancho/2 - 10, y: yPos - 15, w: 20, h: 20, damage: 25, tipo: "saw", rotate: 0 });
+                    else hazardsList.push({ x: xPos + ancho/2 - 25, y: yPos - 8, w: 50, h: 10, damage: 18, tipo: "fire" });
                 }
                 
-                // Coleccionables
-                if(seededRandom(xPos+7) < 0.42){
-                    collectibles.push({x: xPos + ancho/2 - 8, y: yPos-28, value: 15 + Math.floor(currentLevel/8), collected: false, tipo: "coin"});
+                // Monedas
+                if(Math.random() < 0.48){
+                    collectiblesList.push({ x: xPos + ancho/2 - 6, y: yPos - 28, value: 10 + Math.floor(levelNum/5), collected: false, tipo: "coin" });
                 }
                 
-                // Powerups (doble salto extra o dash)
-                if(seededRandom(xPos+99) < 0.12 && dificultad > 0.9){
-                    powerups.push({x: xPos + ancho/2 - 10, y: yPos-35, w: 20, h: 20, tipo: "extradash", collected: false});
+                // Power-ups
+                if(Math.random() < 0.1 && levelNum > 3){
+                    let pType = Math.floor(Math.random() * 4);
+                    powerupsList.push({ x: xPos + ancho/2 - 8, y: yPos - 32, w: 16, h: 16, tipo: pType === 0 ? "shield" : (pType === 1 ? "heart" : (pType === 2 ? "speed" : "points")), collected: false });
                 }
                 
-                // Plataforma móvil
-                if(seededRandom(xPos+133) < 0.22 && dificultad>1.1){
-                    movingPlatforms.push({
-                        x: xPos+40, y: yPos-14, w: 70, h: 18,
-                        leftBound: xPos, rightBound: xPos+200, dir: 1, speed: 1.5 + seededRandom(xPos)*1.5
+                // Resortes
+                if(Math.random() < 0.08 && difficulty > 0.8){
+                    springsList.push({ x: xPos + ancho/2 - 8, y: yPos - 12, w: 16, h: 8, fuerza: -16 });
+                }
+                
+                // Plataformas móviles
+                if(Math.random() < 0.15 && difficulty > 0.9){
+                    movingPlatformsList.push({
+                        x: xPos+30, y: yPos-14, w: 60, h: 18,
+                        leftBound: xPos, rightBound: xPos+160, dir: 1, speed: 1.2 + Math.random() * 1.5
                     });
                 }
+                
+                // Checkpoints
+                if(checkpointCount < maxCheckpoints && i > 3 && xPos > 450 + checkpointCount * 380){
+                    checkpointsList.push({ x: xPos + ancho/2 - 15, y: yPos - 42, w: 30, h: 35, id: checkpointCount, reached: false });
+                    checkpointCount++;
+                }
+                
+                lastX = xPos + ancho;
             }
             
-            // Suelo de seguridad ocasional
-            if(seededRandom(desdeX+444) < 0.6){
-                platforms.push({x: desdeX+60, y: sueloBaseY-22, w: 180, h: 30, tipo: "ground", move: false, color: "#5d8246"});
-            }
+            // Meta
+            platformsList.push({ x: lastX + 140, y: sueloBaseY - 38, w: 90, h: 48, tipo: "goal", theme: theme });
             
-            return desdeX + cantPlat * 140 + 250;
+            return { platforms: platformsList, hazards: hazardsList, collectibles: collectiblesList, checkpoints: checkpointsList, powerups: powerupsList, movingPlatforms: movingPlatformsList, springs: springsList, endX: lastX + 230 };
         }
         
-        function actualizarGeneracion(){
-            if(maxGenX < player.x + 1100){
-                maxGenX = generarNuevoSegmento(maxGenX);
-            }
-            let limiteBorrado = player.x - 900;
-            platforms = platforms.filter(p => p.x + p.w > limiteBorrado);
-            hazards = hazards.filter(h => h.x + h.w > limiteBorrado);
-            collectibles = collectibles.filter(c => !c.collected && c.x + 30 > limiteBorrado);
-            movingPlatforms = movingPlatforms.filter(m => m.x + m.w > limiteBorrado);
-            powerups = powerups.filter(p => !p.collected && p.x + 30 > limiteBorrado);
-        }
+        let currentLevelData = null;
         
-        // Inicializar mundo completo
-        function resetWorldFull(){
-            gameActive = true;
-            cheatPunishmentMode = false;
-            punishmentTimer = 0;
-            escapedPunishment = false;
-            iaIntegrity = 100;
-            totalScore = 0;
-            totalDistance = 0;
-            currentLevel = 1;
-            totalJumps = 0;
-            totalDashes = 0;
-            totalCoins = 0;
+        function loadLevel(level){
+            currentLevelData = generateLevel(level);
+            platforms = currentLevelData.platforms;
+            hazards = currentLevelData.hazards;
+            collectibles = currentLevelData.collectibles;
+            checkpoints = currentLevelData.checkpoints;
+            powerups = currentLevelData.powerups;
+            movingPlatforms = currentLevelData.movingPlatforms;
+            springs = currentLevelData.springs;
+            currentCheckpointId = -1;
+            perfectCurrentLevel = true;
             
-            player.x = 180;
-            player.y = sueloBaseY - 48;
+            if(checkpoints.length > 0){
+                player.x = checkpoints[0].x + 10;
+                player.y = checkpoints[0].y - player.height;
+            } else {
+                player.x = 180;
+                player.y = sueloBaseY - player.height;
+            }
             player.vx = 0;
             player.vy = 0;
-            player.doubleJumpUsed = false;
-            player.wallSliding = false;
+            player.rolling = false;
+            player.rollTimer = 0;
             player.invincibleTimer = 0;
-            player.stamina = 100;
-            player.airDashes = 1;
-            player.dashCooldown = 0;
-            player.slideTimer = 0;
-            
-            platforms = [];
-            hazards = [];
-            collectibles = [];
-            movingPlatforms = [];
-            particles = [];
-            powerups = [];
-            positionHistory = [];
-            suspiciousMovements = 0;
-            
-            platforms.push({x: -50, y: sueloBaseY-24, w: 550, h: 34, tipo: "base", move: false, color: "#5d8246"});
-            maxGenX = 750;
-            for(let i=0;i<7;i++) maxGenX = generarNuevoSegmento(maxGenX);
-            actualizarGeneracion();
+            levelCompleted = false;
+            gameActive = true;
             updateUI();
-            document.getElementById("msgPanel").innerHTML = "🏃 STICKMAN RENACE | IA PROTECTORA ACTIVA | COLOR PERSONALIZABLE";
         }
         
-        // --------------------- FÍSICA + HABILIDADES PARKOUR ------------------
-        function spawnParticles(px, py, count, colorType = "orange"){
+        function respawnAtCheckpoint(){
+            if(checkpoints.length === 0){
+                player.x = 180;
+                player.y = sueloBaseY - player.height;
+            } else {
+                let lastCp = null;
+                for(let i = checkpoints.length-1; i >= 0; i--){
+                    if(checkpoints[i].reached) { lastCp = checkpoints[i]; break; }
+                }
+                if(lastCp){
+                    player.x = lastCp.x + 10;
+                    player.y = lastCp.y - player.height;
+                } else {
+                    player.x = checkpoints[0].x + 10;
+                    player.y = checkpoints[0].y - player.height;
+                }
+            }
+            player.vx = 0;
+            player.vy = 0;
+            player.rolling = false;
+            player.invincibleTimer = 35;
+            gameActive = true;
+            updateUI();
+        }
+        
+        function restartLevel(){
+            loadLevel(currentLevel);
+            updateUI();
+            document.getElementById("msgPanel").innerHTML = "🔄 NIVEL REINICIADO";
+        }
+        
+        function nextLevel(){
+            if(currentLevel < 100){
+                if(perfectCurrentLevel){
+                    stats.perfectLevels++;
+                    totalScore += 200;
+                }
+                currentLevel++;
+                loadLevel(currentLevel);
+                updateUI();
+                document.getElementById("msgPanel").innerHTML = `🎉 ¡NIVEL ${currentLevel}! +${perfectCurrentLevel ? "200 bonus" : "0"} 🎉`;
+            } else {
+                document.getElementById("msgPanel").innerHTML = "🏆 ¡LEYENDA! COMPLETASTE LOS 100 NIVELES 🏆";
+            }
+        }
+        
+        function resetFullGame(){
+            currentLevel = 1;
+            totalScore = 0;
+            player.lives = 5;
+            stats = { deaths: 0, jumps: 0, rolls: 0, coins: 0, distance: 0, perfectLevels: 0 };
+            for(let i=0;i<characters.length;i++){
+                if(i<2) characters[i].unlocked = true;
+                else characters[i].unlocked = false;
+            }
+            currentCharIndex = 0;
+            currentChar = characters[0];
+            player.speedMultiplier = currentChar.velocidad;
+            loadLevel(1);
+            updateUI();
+            checkAchievements();
+            document.getElementById("msgPanel").innerHTML = "🔄 JUEGO REINICIADO COMPLETAMENTE";
+        }
+        
+        // ---------- FÍSICA Y MOVIMIENTO ----------
+        function spawnParticles(px, py, count, color = "orange"){
             for(let i=0;i<count;i++){
                 particles.push({
                     x: px+Math.random()*30, y: py+Math.random()*25,
-                    vx: (Math.random()-0.5)*3.5, vy: (Math.random()-1)*2.5,
-                    life: 0.8, color: colorType === "orange" ? `hsl(${30+Math.random()*20}, 70%, 60%)` : `hsl(${Math.random()*360}, 80%, 65%)`
+                    vx: (Math.random()-0.5)*3, vy: (Math.random()-1)*2.5,
+                    life: 0.7, color: color
                 });
             }
         }
@@ -359,29 +394,59 @@
             }
         }
         
-        function handleMovementAndPhysics(){
-            if(keys.left) { player.vx = Math.max(-VEL_MAX, player.vx - ACEL); player.facingRight = false; }
-            if(keys.right){ player.vx = Math.min(VEL_MAX, player.vx + ACEL); player.facingRight = true; }
+        function handleMovement(){
+            if(player.invincibleTimer > 0) player.invincibleTimer--;
+            if(player.shieldTimer > 0) { player.shieldTimer--; player.hasShield = player.shieldTimer > 0; }
+            
+            let velMaxActual = VEL_MAX_BASE * player.speedMultiplier;
+            
+            if(player.grounded) player.coyoteTime = 6;
+            else player.coyoteTime = Math.max(0, player.coyoteTime - 1);
+            
+            if(keys.jump) player.jumpBuffer = 5;
+            else player.jumpBuffer = Math.max(0, player.jumpBuffer - 1);
+            
+            if(keys.left) { player.vx = Math.max(-velMaxActual, player.vx - ACEL); player.facingRight = false; }
+            if(keys.right){ player.vx = Math.min(velMaxActual, player.vx + ACEL); player.facingRight = true; }
             
             let fric = player.grounded ? FRIC_SUELO : FRIC_AIR;
+            if(player.rolling) fric = 0.97;
             player.vx *= fric;
             player.x += player.vx;
+            
             player.vy += GRAV;
             player.y += player.vy;
             player.grounded = false;
-            player.wallSliding = false;
+            
+            // Rodar
+            if(keys.roll && player.grounded && player.rollCooldown <= 0 && !player.rolling){
+                player.rolling = true;
+                player.rollTimer = 14;
+                player.height = player.slideHeight;
+                player.vx *= 1.3;
+                stats.rolls++;
+                spawnParticles(player.x, player.y+player.height, 10, "gray");
+            }
+            if(player.rolling){
+                player.rollTimer--;
+                if(player.rollTimer <= 0){
+                    player.rolling = false;
+                    player.height = player.normalHeight;
+                    player.rollCooldown = 22;
+                }
+            }
+            if(player.rollCooldown > 0) player.rollCooldown--;
+            
+            let currentH = player.rolling ? player.slideHeight : player.normalHeight;
             
             // Colisiones con plataformas
             for(let plat of platforms){
                 if(player.x + player.width > plat.x && player.x < plat.x + plat.w &&
-                   player.y + player.height > plat.y && player.y < plat.y + plat.h){
-                    if(player.vy >= 0 && (player.y + player.height - player.vy) <= plat.y + 14){
-                        player.y = plat.y - player.height;
+                   player.y + currentH > plat.y && player.y < plat.y + plat.h){
+                    if(player.vy >= 0 && (player.y + currentH - player.vy) <= plat.y + 14){
+                        player.y = plat.y - currentH;
                         player.vy = 0;
                         player.grounded = true;
-                        player.doubleJumpUsed = false;
-                        player.airDashes = 1;
-                        keys.canJump = true;
                     }
                     else if(player.vy < 0 && player.y > plat.y + plat.h - 12){
                         player.y = plat.y + plat.h;
@@ -399,395 +464,421 @@
                 mp.x += mp.dir * mp.speed;
                 if(mp.x >= mp.rightBound) { mp.x = mp.rightBound; mp.dir = -1; }
                 if(mp.x <= mp.leftBound) { mp.x = mp.leftBound; mp.dir = 1; }
-                if(player.x + player.width > mp.x && player.x < mp.x + mp.w && player.y+player.height > mp.y && player.y < mp.y+mp.h){
-                    if(player.vy >= 0 && player.y+player.height - player.vy <= mp.y+12){
-                        player.y = mp.y - player.height;
+                if(player.x + player.width > mp.x && player.x < mp.x + mp.w && player.y+currentH > mp.y && player.y < mp.y+mp.h){
+                    if(player.vy >= 0 && player.y+currentH - player.vy <= mp.y+12){
+                        player.y = mp.y - currentH;
                         player.vy = 0;
                         player.grounded = true;
-                        player.doubleJumpUsed = false;
-                        keys.canJump = true;
                         player.x += mp.dir * mp.speed;
                     }
                 }
             }
             
-            // WALLRUN (sistema avanzado)
-            if(!player.grounded && (keys.left || keys.right)){
-                let touchingWall = false;
-                let wallDir = 0;
-                for(let plat of platforms){
-                    if(player.x + player.width > plat.x && player.x < plat.x + plat.w &&
-                       player.y + player.height-12 > plat.y && player.y+18 < plat.y+plat.h){
-                        if(keys.left && player.x + player.width > plat.x && player.x < plat.x+plat.w){
-                            touchingWall = true; wallDir = -1;
-                        }
-                        if(keys.right && player.x < plat.x + plat.w && player.x+player.width > plat.x){
-                            touchingWall = true; wallDir = 1;
-                        }
-                    }
-                }
-                if(touchingWall && player.vy > 0){
-                    player.wallSliding = true;
-                    player.vy = Math.min(2.0, player.vy);
-                    if(keys.jumpRequest && keys.canJump){
-                        player.vy = WALL_JUMP_Y;
-                        player.vx = wallDir * WALL_JUMP_X;
-                        player.grounded = false;
-                        keys.canJump = false;
-                        player.wallSliding = false;
-                        keys.jumpRequest = false;
-                        spawnParticles(player.x, player.y, 12, "orange");
-                        totalJumps++;
-                    }
+            // Resortes
+            for(let s of springs){
+                if(player.x + player.width > s.x && player.x < s.x + s.w && player.y+currentH > s.y && player.y < s.y+s.h){
+                    player.vy = s.fuerza;
+                    spawnParticles(player.x, player.y, 12, "cyan");
                 }
             }
             
-            // Doble salto
-            if(keys.jumpRequest && !player.grounded && !player.doubleJumpUsed && !player.wallSliding){
-                player.vy = DOBLE_SALTO_FUERZA;
-                player.doubleJumpUsed = true;
-                keys.jumpRequest = false;
-                spawnParticles(player.x, player.y+12, 15, "orange");
-                totalJumps++;
-            }
-            
-            // Salto normal
-            if(keys.jumpRequest && player.grounded && keys.canJump){
+            // Salto
+            if(player.jumpBuffer > 0 && (player.grounded || player.coyoteTime > 0) && !player.rolling){
                 player.vy = SALTO_POWER;
                 player.grounded = false;
-                keys.canJump = false;
-                keys.jumpRequest = false;
-                spawnParticles(player.x, player.y+player.height, 10, "orange");
-                totalJumps++;
+                player.coyoteTime = 0;
+                player.jumpBuffer = 0;
+                stats.jumps++;
+                spawnParticles(player.x, player.y+currentH, 8, "white");
             }
-            if(player.grounded) keys.canJump = true;
             
-            // DASH aéreo
-            if(keys.dashRequest && !player.grounded && player.airDashes > 0 && player.dashCooldown <= 0){
-                let dashDir = player.facingRight ? 1 : -1;
-                player.vx = dashDir * DASH_VEL;
-                player.vy = -2;
-                player.airDashes--;
-                player.dashCooldown = 28;
-                keys.dashRequest = false;
-                spawnParticles(player.x, player.y, 25, "cyan");
-                totalDashes++;
+            if(player.y > H + 100){
+                if(player.lives > 0){
+                    player.lives--;
+                    stats.deaths++;
+                    perfectCurrentLevel = false;
+                    spawnParticles(player.x, player.y, 30, "red");
+                    respawnAtCheckpoint();
+                } else {
+                    gameActive = false;
+                    document.getElementById("msgPanel").innerHTML = "💀 GAME OVER - Presiona RESET 💀";
+                }
+                updateUI();
             }
-            if(player.dashCooldown > 0) player.dashCooldown--;
-            if(player.invincibleTimer > 0) player.invincibleTimer--;
             
-            player.x = Math.min(maxGenX + 600, Math.max(30, player.x));
-            if(player.y > H+120) gameActive = false;
+            player.x = Math.min(8000, Math.max(20, player.x));
+            stats.distance = Math.max(stats.distance, player.x);
         }
         
-        function checkHazardsAndCollect(){
+        function checkCollisions(){
+            let currentH = player.rolling ? player.slideHeight : player.normalHeight;
+            
+            // Peligros
             for(let h of hazards){
-                if(player.x + player.width > h.x && player.x < h.x+h.w && player.y+player.height > h.y && player.y < h.y+h.h){
-                    if(player.invincibleTimer <= 0 && !cheatPunishmentMode){
-                        iaIntegrity = Math.max(0, iaIntegrity - h.damage * 0.7);
-                        player.invincibleTimer = 30;
-                        totalScore = Math.max(0, totalScore-25);
-                        spawnParticles(player.x, player.y, 18, "red");
-                        if(iaIntegrity <= 0) activatePunishmentMode();
-                    } else if(cheatPunishmentMode){
-                        punishmentTimer = Math.max(0, punishmentTimer - 4);
+                if(player.x + player.width > h.x && player.x < h.x + h.w && player.y + currentH > h.y && player.y < h.y + h.h){
+                    if(player.invincibleTimer <= 0 && !player.hasShield){
+                        if(player.lives > 0){
+                            player.lives--;
+                            player.invincibleTimer = 35;
+                            totalScore = Math.max(0, totalScore - 25);
+                            perfectCurrentLevel = false;
+                            stats.deaths++;
+                            spawnParticles(player.x, player.y, 20, "red");
+                            respawnAtCheckpoint();
+                        } else {
+                            gameActive = false;
+                        }
+                        updateUI();
+                    } else if(player.hasShield){
+                        player.shieldTimer = 0;
+                        player.hasShield = false;
+                        spawnParticles(player.x, player.y, 15, "cyan");
                     }
                 }
             }
             
+            // Monedas
             for(let c of collectibles){
-                if(!c.collected && player.x + player.width > c.x && player.x < c.x+18 && player.y+player.height > c.y && player.y < c.y+18){
+                if(!c.collected && player.x + player.width > c.x && player.x < c.x+16 && player.y+currentH > c.y && player.y < c.y+16){
                     c.collected = true;
                     totalScore += c.value;
-                    totalCoins++;
-                    if(!cheatPunishmentMode) iaIntegrity = Math.min(100, iaIntegrity + 1.0);
-                    else punishmentTimer = Math.min(3800, punishmentTimer+0.6);
-                    spawnParticles(c.x, c.y, 8, "gold");
+                    stats.coins++;
+                    spawnParticles(c.x, c.y, 10, "gold");
+                    updateUI();
+                    checkAchievements();
                 }
             }
-            collectibles = collectibles.filter(c=>!c.collected);
             
+            // Power-ups
             for(let p of powerups){
-                if(!p.collected && player.x + player.width > p.x && player.x < p.x+p.w && player.y+player.height > p.y && player.y < p.y+p.h){
+                if(!p.collected && player.x + player.width > p.x && player.x < p.x+p.w && player.y+currentH > p.y && player.y < p.y+p.h){
                     p.collected = true;
-                    if(p.tipo === "extradash"){
-                        player.airDashes = Math.min(3, player.airDashes+1);
-                        totalScore += 50;
-                        spawnParticles(p.x, p.y, 20, "cyan");
-                    }
+                    if(p.tipo === "shield"){ player.hasShield = true; player.shieldTimer = 600; spawnParticles(p.x, p.y, 15, "cyan"); }
+                    else if(p.tipo === "heart"){ player.lives = Math.min(9, player.lives+1); spawnParticles(p.x, p.y, 12, "pink"); }
+                    else if(p.tipo === "speed"){ player.speedMultiplier = 1.3; setTimeout(()=>{ player.speedMultiplier = currentChar.velocidad; }, 10000); spawnParticles(p.x, p.y, 15, "yellow"); }
+                    else if(p.tipo === "points"){ totalScore += 100; spawnParticles(p.x, p.y, 20, "gold"); }
+                    updateUI();
                 }
             }
             powerups = powerups.filter(p=>!p.collected);
-        }
-        
-        function activatePunishmentMode(){
-            cheatPunishmentMode = true;
-            punishmentTimer = 0;
-            iaIntegrity = 0;
-            platforms = [];
-            hazards = [];
-            collectibles = [];
-            for(let i=0;i<500;i++){
-                let px = 80 + i * 48;
-                let py = sueloBaseY - 28 - Math.sin(i*0.55)*72;
-                platforms.push({x: px, y: py, w: 42, h: 18, tipo: "punish", move: false, color: "#a13a2a"});
-                if(i%2===0) hazards.push({x: px+14, y: py-11, w: 20, h: 11, damage: 35, tipo: "spike"});
-                if(i%7===3) collectibles.push({x: px+18, y: py-30, value: 8, collected: false, tipo: "coin"});
-            }
-            maxGenX = 80 + 500*48;
-            document.getElementById("msgPanel").style.background = "#8b2c1dcc";
-            document.getElementById("msgPanel").innerHTML = "⚠️ MODO PURGATORIO: DEBES COMPLETAR 1 HORA REAL DE PARKOUR (CASTIGO INFINITO) ⚠️";
-        }
-        
-        function updateProgression(){
-            if(!gameActive) return;
-            let distanceGain = Math.max(0, player.vx * 0.022);
-            totalDistance += distanceGain;
-            let newLevel = 1 + Math.floor(totalDistance / 40);
-            if(newLevel > currentLevel){
-                currentLevel = newLevel;
-                if(!cheatPunishmentMode) iaIntegrity = Math.min(100, iaIntegrity+3.5);
-                document.getElementById("msgPanel").innerHTML = `⚡ NIVEL ${currentLevel} ALCANZADO | DIFICULTAD +${Math.floor(currentLevel/10)}% ⚡`;
-                spawnParticles(player.x, player.y, 35, "gold");
-            }
             
-            if(cheatPunishmentMode){
-                punishmentTimer += 1/60;
-                if(punishmentTimer >= 3600 && !escapedPunishment){
-                    escapedPunishment = true;
-                    cheatPunishmentMode = false;
-                    iaIntegrity = 75;
-                    resetWorldFull();
-                    document.getElementById("msgPanel").innerHTML = "🏆 LEYENDA: HAS SOBREVIVIDO 1 HORA EN CASTIGO. ERES EL 1% 🏆";
+            // Checkpoints
+            for(let cp of checkpoints){
+                if(!cp.reached && player.x + player.width > cp.x && player.x < cp.x + cp.w && player.y+currentH > cp.y && player.y < cp.y + cp.h){
+                    cp.reached = true;
+                    currentCheckpointId = cp.id;
+                    spawnParticles(cp.x+15, cp.y+15, 25, "cyan");
+                    document.getElementById("msgPanel").innerHTML = `🏁 CHECKPOINT ${cp.id+1} ALCANZADO 🏁`;
+                    updateUI();
                 }
-                let rest = Math.max(0, 3600 - punishmentTimer);
-                let minutos = Math.floor(rest / 60);
-                let segs = Math.floor(rest % 60);
-                document.getElementById("msgPanel").innerHTML = `⏳ CASTIGO INFINITO :: ${minutos}m ${segs}s para redención (1 hora total) ⏳`;
             }
             
-            // IA anti cheat avanzada con análisis de velocidad
-            if(!cheatPunishmentMode){
-                let deltaX = Math.abs(player.x - lastValidPos.x);
-                let deltaY = Math.abs(player.vy);
-                if((deltaY > 18 && !player.grounded) || deltaX > 28) suspiciousMovements+=1.8;
-                if(suspiciousMovements > 22) iaIntegrity = Math.max(0, iaIntegrity-1.2);
-                if(iaIntegrity <= 0) activatePunishmentMode();
-                iaIntegrity = Math.min(100, iaIntegrity + 0.05);
-                suspiciousMovements = Math.max(0, suspiciousMovements-0.25);
+            // Meta del nivel
+            for(let plat of platforms){
+                if(plat.tipo === "goal" && player.x + player.width > plat.x && player.x < plat.x + plat.w){
+                    levelCompleted = true;
+                    gameActive = false;
+                    totalScore += 100 * currentLevel;
+                    spawnParticles(player.x, player.y, 50, "gold");
+                    document.getElementById("msgPanel").innerHTML = `🎉 NIVEL ${currentLevel} COMPLETADO! +${100*currentLevel} 🎉`;
+                    updateUI();
+                    checkAchievements();
+                    setTimeout(() => { nextLevel(); }, 1500);
+                    return;
+                }
             }
-            lastValidPos = { x: player.x, y: player.y };
-            updateUI();
+        }
+        
+        // Logros
+        function checkAchievements(){
+            let newAchievements = [];
+            if(stats.deaths >= 10 && !achievements.includes("BROMAS")) newAchievements.push("💀 BROMAS - Moriste 10 veces");
+            if(stats.coins >= 100 && !achievements.includes("COLECCIONISTA")) newAchievements.push("💰 COLECCIONISTA - 100 monedas");
+            if(currentLevel >= 20 && !achievements.includes("PARKOUR PRO")) newAchievements.push("🏅 PARKOUR PRO - Nivel 20");
+            if(currentLevel >= 50 && !achievements.includes("LEYENDA")) newAchievements.push("🏆 LEYENDA - Nivel 50");
+            if(stats.perfectLevels >= 10 && !achievements.includes("PERFECCIÓN")) newAchievements.push("✨ PERFECCIÓN - 10 niveles sin morir");
+            if(newAchievements.length > 0){
+                achievements.push(...newAchievements);
+                document.getElementById("msgPanel").innerHTML = `🏆 LOGRO: ${newAchievements[0]} 🏆`;
+            }
         }
         
         function updateUI(){
-            document.getElementById("levelNum").innerText = cheatPunishmentMode ? "INF" : currentLevel;
+            document.getElementById("levelNum").innerText = currentLevel;
+            document.getElementById("totalLevels").innerText = "100";
             document.getElementById("scoreVal").innerText = Math.floor(totalScore);
-            document.getElementById("distVal").innerText = Math.floor(totalDistance);
-            document.getElementById("iaEthics").innerText = cheatPunishmentMode ? 0 : Math.floor(iaIntegrity);
-            document.getElementById("doubleReady").innerText = (!player.doubleJumpUsed || player.grounded) ? "✓" : "✗";
-            document.getElementById("wallReady").innerText = (!player.wallSliding && player.grounded) ? "✓" : "⚡";
-            document.getElementById("dashReady").innerText = (player.airDashes > 0 && player.dashCooldown <= 0) ? "✓" : "⏳";
-            if(iaIntegrity < 20 && !cheatPunishmentMode) document.getElementById("iaEthics").classList.add("badge-critical");
-            else document.getElementById("iaEthics").classList.remove("badge-critical");
+            document.getElementById("livesVal").innerText = player.lives;
+            document.getElementById("cpNum").innerText = currentCheckpointId + 1;
+            document.getElementById("charName").innerText = currentChar.name;
+            
+            for(let i=0;i<characters.length;i++){
+                if(!characters[i].unlocked && totalScore >= characters[i].cost){
+                    characters[i].unlocked = true;
+                    document.getElementById("msgPanel").innerHTML = `🔓 ¡${characters[i].name} desbloqueado! Ve a la tienda 🔓`;
+                }
+            }
+        }
+        
+        function changeCharacter(delta){
+            let newIndex = currentCharIndex;
+            do {
+                newIndex = (newIndex + delta + characters.length) % characters.length;
+                if(newIndex === currentCharIndex) break;
+            } while(!characters[newIndex].unlocked);
+            if(characters[newIndex].unlocked){
+                currentCharIndex = newIndex;
+                currentChar = characters[currentCharIndex];
+                player.speedMultiplier = currentChar.velocidad;
+                updateUI();
+            }
+        }
+        
+        function openShop(){
+            let shopDiv = document.getElementById("shopList");
+            shopDiv.innerHTML = "";
+            for(let i=0;i<characters.length;i++){
+                let c = characters[i];
+                let btn = document.createElement("button");
+                btn.innerText = `${c.name} - ${c.unlocked ? "DESBLOQUEADO" : c.cost + " pts"} ${c.unlocked ? "✅" : "🔒"}`;
+                btn.style.margin = "5px";
+                if(!c.unlocked && totalScore >= c.cost){
+                    btn.onclick = () => {
+                        totalScore -= c.cost;
+                        c.unlocked = true;
+                        openShop();
+                        updateUI();
+                        document.getElementById("msgPanel").innerHTML = `🎉 ¡${c.name} desbloqueado! 🎉`;
+                    };
+                } else if(!c.unlocked){
+                    btn.disabled = true;
+                    btn.style.opacity = "0.5";
+                }
+                shopDiv.appendChild(btn);
+            }
+            document.getElementById("shopModal").style.display = "block";
         }
         
         let camX = 0;
         function updateCamera(){
-            camX = Math.min(maxGenX - W + 200, Math.max(0, player.x - W/2.5));
+            camX = Math.min(7500, Math.max(0, player.x - W/2.5));
         }
         
-        // --------------------- DIBUJO STICKMAN PROFESIONAL ----------------------
-        function drawStickman(x, y, w, h, color, facingRight){
+        // --------------------- DIBUJO MEJORADO ----------------------
+        function drawStickman(x, y, w, h, character, facingRight, rolling, hasShield){
             ctx.save();
             ctx.shadowBlur = 3;
-            ctx.shadowColor = "rgba(0,0,0,0.5)";
-            // Cuerpo principal (cabeza circular + cuerpo de líneas)
-            let headX = x + w/2;
-            let headY = y + 12;
+            let headY = rolling ? y + 8 : y + 12;
+            
+            if(hasShield){
+                ctx.beginPath();
+                ctx.arc(x + w/2, headY, 16, 0, Math.PI*2);
+                ctx.fillStyle = "rgba(100,200,255,0.3)";
+                ctx.fill();
+            }
+            
             ctx.beginPath();
-            ctx.arc(headX, headY, 11, 0, Math.PI*2);
-            ctx.fillStyle = color;
+            ctx.arc(x + w/2, headY, 11, 0, Math.PI*2);
+            ctx.fillStyle = character.skin;
             ctx.fill();
             ctx.strokeStyle = "#222";
-            ctx.lineWidth = 2;
             ctx.stroke();
-            // Ojos
-            ctx.fillStyle = "white";
+            
+            ctx.fillStyle = "#ffffff";
             ctx.beginPath();
-            ctx.arc(headX - 4, headY - 2, 2.5, 0, Math.PI*2);
+            ctx.arc(x + w/2 - 4, headY - 2, 2.8, 0, Math.PI*2);
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(headX + 4, headY - 2, 2.5, 0, Math.PI*2);
+            ctx.arc(x + w/2 + 4, headY - 2, 2.8, 0, Math.PI*2);
             ctx.fill();
-            ctx.fillStyle = "#111";
+            ctx.fillStyle = character.eye;
             ctx.beginPath();
-            ctx.arc(headX - 4 + (facingRight ? 0.5 : -0.5), headY - 2.5, 1.2, 0, Math.PI*2);
+            ctx.arc(x + w/2 - 4 + (facingRight ? 0.8 : -0.8), headY - 2.5, 1.5, 0, Math.PI*2);
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(headX + 4 + (facingRight ? 0.5 : -0.5), headY - 2.5, 1.2, 0, Math.PI*2);
+            ctx.arc(x + w/2 + 4 + (facingRight ? 0.8 : -0.8), headY - 2.5, 1.5, 0, Math.PI*2);
             ctx.fill();
-            // Sonrisa
+            
             ctx.beginPath();
-            ctx.arc(headX, headY + 2, 5, 0.05, Math.PI - 0.05);
-            ctx.stroke();
-            // Cuerpo (línea)
-            ctx.beginPath();
-            ctx.moveTo(headX, y + 23);
-            ctx.lineTo(headX, y + 42);
+            ctx.moveTo(x + w/2, headY + 8);
+            ctx.lineTo(x + w/2, rolling ? y + 35 : y + 42);
             ctx.lineWidth = 3;
+            ctx.strokeStyle = character.outfit;
             ctx.stroke();
-            // Piernas
+            
             ctx.beginPath();
-            ctx.moveTo(headX, y + 42);
-            ctx.lineTo(headX - 8, y + 50);
-            ctx.moveTo(headX, y + 42);
-            ctx.lineTo(headX + 8, y + 50);
+            ctx.moveTo(x + w/2, rolling ? y + 35 : y + 42);
+            ctx.lineTo(x + w/2 - 8, rolling ? y + 42 : y + 50);
+            ctx.moveTo(x + w/2, rolling ? y + 35 : y + 42);
+            ctx.lineTo(x + w/2 + 8, rolling ? y + 42 : y + 50);
             ctx.stroke();
-            // Brazos
+            
             ctx.beginPath();
-            ctx.moveTo(headX, y + 30);
-            ctx.lineTo(headX - 10, y + 38);
-            ctx.moveTo(headX, y + 30);
-            ctx.lineTo(headX + 10, y + 38);
+            ctx.moveTo(x + w/2, headY + 18);
+            ctx.lineTo(x + w/2 - 10, headY + 30);
+            ctx.moveTo(x + w/2, headY + 18);
+            ctx.lineTo(x + w/2 + 10, headY + 30);
             ctx.stroke();
+            
+            ctx.fillStyle = character.color;
+            ctx.fillRect(x + w/2 - 7, headY - 7, 14, 5);
             ctx.restore();
         }
         
         function draw(){
             ctx.clearRect(0,0,W,H);
             let grad = ctx.createLinearGradient(0,0,0,H);
-            grad.addColorStop(0,"#121a2c");
-            grad.addColorStop(1,"#1e2a3e");
+            grad.addColorStop(0,"#0f172a");
+            grad.addColorStop(1,"#1e293b");
             ctx.fillStyle = grad;
             ctx.fillRect(0,0,W,H);
             ctx.save();
             ctx.translate(-camX,0);
             
-            // Plataformas
             for(let p of platforms){
-                ctx.fillStyle = p.color || "#6e5e42";
-                ctx.shadowBlur = 3;
+                ctx.fillStyle = p.tipo === "goal" ? "#2ecc71" : "#5d4037";
                 ctx.fillRect(p.x, p.y, p.w, p.h);
-                ctx.fillStyle = "#c0a56b";
-                ctx.fillRect(p.x+4, p.y-4, p.w-8, 5);
+                ctx.fillStyle = "#8d6e63";
+                ctx.fillRect(p.x+4, p.y-3, p.w-8, 4);
             }
-            // Plataformas móviles
+            
             for(let mp of movingPlatforms){
-                ctx.fillStyle = "#5a7d4e";
+                ctx.fillStyle = "#4a6741";
                 ctx.fillRect(mp.x, mp.y, mp.w, mp.h);
-                ctx.fillStyle = "#8bb56a";
-                ctx.fillRect(mp.x+5, mp.y-3, mp.w-10, 5);
+                ctx.fillStyle = "#6b8e5e";
+                ctx.fillRect(mp.x+5, mp.y-3, mp.w-10, 4);
             }
-            // Peligros
+            
             for(let h of hazards){
-                ctx.fillStyle = "#e05a2a";
-                ctx.beginPath();
-                ctx.moveTo(h.x+h.w/2, h.y-8);
-                ctx.lineTo(h.x, h.y+h.h);
-                ctx.lineTo(h.x+h.w, h.y+h.h);
-                ctx.fill();
-                ctx.fillStyle = "#ff8040";
-                ctx.fillRect(h.x+3, h.y+4, h.w-6, 6);
+                if(h.tipo === "low"){
+                    ctx.fillStyle = "#d35400";
+                    ctx.fillRect(h.x, h.y, h.w, h.h);
+                } else if(h.tipo === "saw"){
+                    ctx.fillStyle = "#7f8c8d";
+                    ctx.beginPath();
+                    ctx.arc(h.x+h.w/2, h.y+h.h/2, h.w/2, 0, Math.PI*2);
+                    ctx.fill();
+                    for(let i=0;i<8;i++) ctx.fillRect(h.x+h.w/2-3, h.y+2, 6, 5);
+                } else {
+                    ctx.fillStyle = "#e74c3c";
+                    ctx.fillRect(h.x, h.y, h.w, h.h);
+                    ctx.fillStyle = "#c0392b";
+                    for(let i=0;i<3;i++) ctx.fillRect(h.x+4+i*6, h.y-5, 3, 7);
+                }
             }
-            // Coleccionables
+            
             for(let c of collectibles){
-                ctx.fillStyle = "#f7c56e";
-                ctx.shadowBlur = 10;
-                ctx.beginPath();
-                ctx.arc(c.x+9, c.y+9, 10, 0, Math.PI*2);
-                ctx.fill();
-                ctx.fillStyle = "#ffa559";
-                ctx.beginPath();
-                ctx.arc(c.x+9, c.y+9, 5, 0, Math.PI*2);
-                ctx.fill();
+                if(!c.collected){
+                    ctx.fillStyle = "#f1c40f";
+                    ctx.beginPath();
+                    ctx.arc(c.x+8, c.y+8, 9, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.fillStyle = "#e67e22";
+                    ctx.beginPath();
+                    ctx.arc(c.x+8, c.y+8, 4, 0, Math.PI*2);
+                    ctx.fill();
+                }
             }
-            // Powerups
-            for(let p of powerups){
-                ctx.fillStyle = "#5aafff";
-                ctx.beginPath();
-                ctx.rect(p.x, p.y, p.w, p.h);
-                ctx.fill();
-                ctx.fillStyle = "white";
-                ctx.font = "14px monospace";
-                ctx.fillText("⚡", p.x+4, p.y+16);
+            
+            for(let pw of powerups){
+                if(!pw.collected){
+                    ctx.fillStyle = pw.tipo === "shield" ? "#3498db" : (pw.tipo === "heart" ? "#e74c3c" : "#f39c12");
+                    ctx.fillRect(pw.x, pw.y, pw.w, pw.h);
+                    ctx.fillStyle = "white";
+                    ctx.font = "12px monospace";
+                    ctx.fillText(pw.tipo === "shield" ? "🛡️" : (pw.tipo === "heart" ? "❤️" : "⚡"), pw.x+3, pw.y+13);
+                }
             }
-            // Partículas
+            
+            for(let s of springs){
+                ctx.fillStyle = "#95a5a6";
+                ctx.fillRect(s.x, s.y, s.w, s.h);
+                ctx.fillStyle = "#7f8c8d";
+                ctx.fillRect(s.x+3, s.y-3, s.w-6, 4);
+            }
+            
+            for(let cp of checkpoints){
+                ctx.fillStyle = cp.reached ? "#27ae60" : "#e67e22";
+                ctx.fillRect(cp.x+12, cp.y, 6, cp.h);
+                ctx.beginPath();
+                ctx.moveTo(cp.x+18, cp.y);
+                ctx.lineTo(cp.x+38, cp.y+18);
+                ctx.lineTo(cp.x+18, cp.y+36);
+                ctx.fill();
+                if(cp.reached){
+                    ctx.fillStyle = "white";
+                    ctx.font = "14px monospace";
+                    ctx.fillText("✓", cp.x+21, cp.y+25);
+                }
+            }
+            
             for(let pa of particles){
-                ctx.fillStyle = pa.color || "orange";
+                ctx.fillStyle = pa.color;
                 ctx.fillRect(pa.x, pa.y, 4,4);
             }
-            // Stickman
-            drawStickman(player.x, player.y, player.width, player.height, stickmanColor, player.facingRight);
+            
+            drawStickman(player.x, player.y, player.width, player.height, currentChar, player.facingRight, player.rolling, player.hasShield);
             
             ctx.restore();
-            // UI sobre cámara
-            ctx.font = "bold 18 monospace";
+            
+            ctx.font = "bold 14 monospace";
             ctx.fillStyle = "white";
-            ctx.shadowBlur = 2;
-            if(cheatPunishmentMode){
-                ctx.fillStyle = "#ff8866";
-                ctx.font = "bold 28 monospace";
-                ctx.fillText("🔥 SENTENCIA INFINITA 🔥", W/2-210, 55);
+            if(player.rollCooldown > 0) ctx.fillText("⭕ RODAR", W-100, 45);
+            if(player.hasShield) ctx.fillStyle = "#3498db"; ctx.fillText("🛡️ SHIELD", W-100, 70);
+            if(player.speedMultiplier > 1.05) ctx.fillText("⚡ SPEED BOOST", W-120, 95);
+            if(levelCompleted){
+                ctx.fillStyle = "#2ecc71";
+                ctx.font = "bold 32 monospace";
+                ctx.fillText("¡NIVEL COMPLETADO!", W/2-160, H/2);
             }
-            if(player.dashCooldown > 0){
-                ctx.fillStyle = "cyan";
-                ctx.font = "bold 14 monospace";
-                ctx.fillText("⚡ DASH RECARGANDO", player.x-camX-25, player.y-20);
-            }
-            if(player.invincibleTimer > 0){
-                ctx.fillStyle = "gold";
-                ctx.font = "bold 12 monospace";
-                ctx.fillText("🛡️ INVINCIBLE", player.x-camX-15, player.y-10);
+            if(!gameActive && !levelCompleted && player.lives === 0){
+                ctx.fillStyle = "#e74c3c";
+                ctx.font = "bold 36 monospace";
+                ctx.fillText("GAME OVER", W/2-100, H/2);
             }
         }
         
-        // ---------------- GAME LOOP Y EVENTOS ----------------
         function gameLoop(){
-            if(!gameActive){
-                draw();
-                ctx.fillStyle = "rgba(0,0,0,0.85)";
-                ctx.fillRect(0,0,W,H);
-                ctx.fillStyle = "#fff";
-                ctx.font = "34px monospace";
-                ctx.fillText("GAME OVER - PRESIONA REINICIAR", W/2-300, H/2);
-                requestAnimationFrame(gameLoop);
-                return;
+            if(gameActive && !levelCompleted){
+                handleMovement();
+                checkCollisions();
+                updateParticles();
+                updateCamera();
+                frameCounter++;
             }
-            handleMovementAndPhysics();
-            checkHazardsAndCollect();
-            updateParticles();
-            actualizarGeneracion();
-            updateProgression();
-            updateCamera();
             draw();
-            frameId++;
             requestAnimationFrame(gameLoop);
         }
         
-        // Eventos teclado y touch
+        // Eventos
         window.addEventListener('keydown', (e) => {
             let k = e.key;
             if(k === 'ArrowLeft' || k === 'a' || k === 'A') keys.left = true;
             if(k === 'ArrowRight' || k === 'd' || k === 'D') keys.right = true;
-            if(k === 'ArrowUp' || k === ' ' || k === 'Space'){ e.preventDefault(); keys.jumpRequest = true; }
-            if(k === 'Shift' || k === 'Control'){ e.preventDefault(); keys.dashRequest = true; }
+            if(k === 'ArrowUp' || k === ' ' || k === 'Space'){ e.preventDefault(); keys.jump = true; }
+            if(k === 'ArrowDown' || k === 's' || k === 'S'){ e.preventDefault(); keys.roll = true; }
+            if(k === 'r' || k === 'R'){ e.preventDefault(); restartLevel(); }
         });
         window.addEventListener('keyup', (e) => {
             let k = e.key;
             if(k === 'ArrowLeft' || k === 'a' || k === 'A') keys.left = false;
             if(k === 'ArrowRight' || k === 'd' || k === 'D') keys.right = false;
+            if(k === 'ArrowUp' || k === ' ' || k === 'Space') keys.jump = false;
+            if(k === 'ArrowDown' || k === 's' || k === 'S') keys.roll = false;
         });
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); keys.jumpRequest=true; });
-        canvas.addEventListener('touchmove', (e) => e.preventDefault());
         
-        document.getElementById('resetGameBtn').onclick = () => { resetWorldFull(); gameActive=true; cheatPunishmentMode=false; iaIntegrity=100; punishmentTimer=0; };
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); keys.jump = true; });
+        
+        document.getElementById('resetGameBtn').onclick = () => resetFullGame();
         document.getElementById('fullscreenBtn').onclick = () => {
             if(!document.fullscreenElement) document.documentElement.requestFullscreen();
             else document.exitFullscreen();
         };
+        document.getElementById('nextChar').onclick = () => changeCharacter(1);
+        document.getElementById('prevChar').onclick = () => changeCharacter(-1);
+        document.getElementById('shopBtn').onclick = () => openShop();
+        document.getElementById('closeShop').onclick = () => document.getElementById("shopModal").style.display = "none";
         
-        resetWorldFull();
+        loadLevel(1);
         gameLoop();
     })();
 </script>
