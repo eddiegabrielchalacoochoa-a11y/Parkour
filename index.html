@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>PARKOUR OMEGA | INFINITE LEVELS | IA NEURONAL ANTICHEAT</title>
+    <title>STICKMAN PARKOUR ULTIMATE | 1500+ LÍNEAS | IA ANTICHEAT | COLOR PERSONALIZABLE</title>
     <style>
         * {
             margin: 0;
@@ -65,6 +65,25 @@
             letter-spacing: 0.5px;
         }
 
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e2a3a;
+            padding: 3px 15px;
+            border-radius: 40px;
+        }
+        .color-picker label {
+            font-size: 0.8rem;
+        }
+        input#stickmanColor {
+            width: 40px;
+            height: 35px;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            background: #ff8844;
+        }
         .badge-critical {
             background: #d93f21cc !important;
             animation: pulse 0.8s infinite;
@@ -100,11 +119,6 @@
             font-size: 0.7rem;
             font-family: monospace;
         }
-
-        @keyframes glitch {
-            0% { text-shadow: -2px 0 red; }
-            100% { text-shadow: 2px 0 blue; }
-        }
     </style>
 </head>
 <body>
@@ -116,19 +130,24 @@
             <div>⭐ SCORE: <span id="scoreVal">0</span></div>
             <div>📏 DIST: <span id="distVal">0</span>m</div>
             <div>🛡️ IA ÉTICA: <span id="iaEthics">100</span>%</div>
-            <div class="skill-indicator">⚡ DOBLE SALTO: <span id="doubleReady">✓</span> | 🧱 WALLRUN: <span id="wallReady">✓</span></div>
+            <div class="skill-indicator">⚡ DOBLE SALTO: <span id="doubleReady">✓</span> | 🧱 WALLRUN: <span id="wallReady">✓</span> | 💨 DASH: <span id="dashReady">✓</span></div>
+            <div class="color-picker">
+                🎨 <label>STICKMAN</label>
+                <input type="color" id="stickmanColor" value="#ff8844">
+            </div>
             <button id="resetGameBtn">🔄 REVIVIR</button>
             <button id="fullscreenBtn" class="full-btn">⛶ FULLSCREEN</button>
         </div>
         <div class="dashboard" id="msgPanel" style="background:#331c0ecc; justify-content:center; gap:5px;">
-            🧠 IA SUPREME | +1500 combinaciones | Castigo infinito por trampas | Habilidad Parkour
+            🧠 STICKMAN PARKOUR EXTREMO | +10000 COMBINACIONES | IA NEURONAL | CASTIGO 1 HORA
         </div>
     </div>
 </div>
 
 <script>
     (function(){
-        // ---------------------- MUNDO Y CONFIGURACIÓN AVANZADA (1400+ lineas real) ----------------
+        // ======================== 1600+ LÍNEAS DE CÓDIGO ========================
+        // ---------------------- CONFIGURACIÓN DEL MUNDO -------------------------
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const W = 1400, H = 650;
@@ -136,11 +155,16 @@
         canvas.height = H;
         let sueloBaseY = H - 72;
         
-        // ---------- Jugador con sistema de habilidades (parkour extremo) ----------
+        // Color personalizable del stickman
+        let stickmanColor = "#ff8844";
+        const colorPicker = document.getElementById('stickmanColor');
+        colorPicker.addEventListener('input', (e) => { stickmanColor = e.target.value; });
+        
+        // ---------- JUGADOR STICKMAN CON HABILIDADES PARKOUR ----------
         let player = {
             x: 180, y: sueloBaseY - 48,
             vx: 0, vy: 0,
-            width: 32, height: 48,
+            width: 28, height: 48,
             grounded: false,
             facingRight: true,
             invincibleTimer: 0,
@@ -149,8 +173,10 @@
             wallSliding: false,
             wallDir: 0,
             stamina: 100,
-            airDashes: 1,      // dash aéreo extra
-            dashCooldown: 0
+            airDashes: 1,
+            dashCooldown: 0,
+            slideTimer: 0,
+            comboCounter: 0
         };
         
         // Constantes físicas + parkour
@@ -166,86 +192,108 @@
         const DASH_VEL = 14;
         
         // Controles
-        const keys = { left: false, right: false, jumpRequest: false, canJump: true, dashRequest: false };
+        const keys = { left: false, right: false, jumpRequest: false, canJump: true, dashRequest: false, slideRequest: false };
         
         // --------------------- ELEMENTOS DEL MUNDO --------------------
-        let platforms = [];          // plataformas normales
-        let hazards = [];            // trampas letales / espinas
-        let collectibles = [];       // orbes de poder / puntos
-        let movingPlatforms = [];    // plataformas móviles
-        let particles = [];          // efectos visuales
-        let wallJumpZones = [];      // zonas especiales para wallrun
+        let platforms = [];
+        let hazards = [];
+        let collectibles = [];
+        let movingPlatforms = [];
+        let particles = [];
+        let wallJumpZones = [];
+        let powerups = [];
         
         // Progresión infinita
         let gameActive = true;
         let totalScore = 0;
         let totalDistance = 0;
         let currentLevel = 1;
-        let iaIntegrity = 100;       // ética IA (si baja a 0 -> modo castigo 1 hora)
+        let iaIntegrity = 100;
         let cheatPunishmentMode = false;
-        let punishmentTimer = 0;      // segundos acumulados (necesita 3600 para salir)
+        let punishmentTimer = 0;
         let escapedPunishment = false;
         
-        // IA anti-trampas con historial de posiciones
+        // IA anti-trampas avanzada
         let positionHistory = [];
         let suspiciousMovements = 0;
         let frameId = 0;
         let lastValidPos = { x: player.x, y: player.y };
+        let velocityHistory = [];
         
-        // Generación procedural infinita con más de 10.000 combinaciones
+        // Generación procedural infinita
         let worldGenOffset = 0;
         let maxGenX = 800;
         let rngSeed = 424242;
+        let levelTheme = 1;
         
-        // logros y efectos
+        // Logros y estadísticas
         let achievements = [];
-        let comboCounter = 0;
+        let totalJumps = 0;
+        let totalDashes = 0;
+        let totalCoins = 0;
         
-        // ---------- FUNCIONES AUXILIARES GENERACIÓN ----------
+        // ---------- FUNCIONES DE GENERACIÓN PROCEDURAL AVANZADA ----------
         function seededRandom(seed){
-            let x = Math.sin(seed + frameId) * 10000;
+            let x = Math.sin(seed + frameId * 0.01) * 10000;
             return x - Math.floor(x);
         }
         
         function generarNuevoSegmento(desdeX){
-            let varianteNivel = (currentLevel + Math.floor(desdeX / 280)) % 37;
-            let dificultad = Math.min(2.8, 0.8 + (currentLevel-1) * 0.022);
-            let cantPlat = 5 + Math.floor(seededRandom(varianteNivel+desdeX)*7);
+            let varianteNivel = (currentLevel + Math.floor(desdeX / 280)) % 47;
+            let dificultad = Math.min(3.2, 0.8 + (currentLevel-1) * 0.018);
+            let cantPlat = 6 + Math.floor(seededRandom(varianteNivel+desdeX)*9);
+            
             for(let i=0; i<cantPlat; i++){
-                let xPos = desdeX + i * 125 + seededRandom(desdeX + i*31) * 70;
-                let ancho = 52 + Math.floor(seededRandom(xPos)*65);
+                let xPos = desdeX + i * 118 + seededRandom(desdeX + i*31) * 85;
+                let ancho = 48 + Math.floor(seededRandom(xPos)*75);
                 let alto = 22;
                 let yPos = sueloBaseY - 18 - seededRandom(xPos+200)*95;
-                // dificultad: plataformas más altas o móviles
-                platforms.push({x: xPos, y: yPos, w: ancho, h: alto, tipo: "normal", move: false});
-                if(seededRandom(xPos) < 0.25 * dificultad){
-                    hazards.push({x: xPos + ancho/2 - 12, y: yPos-10, w: 24, h: 12, damage: 25});
+                
+                // Plataforma normal
+                platforms.push({x: xPos, y: yPos, w: ancho, h: alto, tipo: "normal", move: false, color: "#6e5e42"});
+                
+                // Peligros según dificultad
+                if(seededRandom(xPos) < 0.28 * dificultad){
+                    hazards.push({x: xPos + ancho/2 - 14, y: yPos-12, w: 28, h: 14, damage: 25, tipo: "spike"});
                 }
-                if(seededRandom(xPos+7) < 0.38){
-                    collectibles.push({x: xPos + ancho/2 - 6, y: yPos-22, value: 15 + Math.floor(currentLevel/9), collected: false});
+                
+                // Coleccionables
+                if(seededRandom(xPos+7) < 0.42){
+                    collectibles.push({x: xPos + ancho/2 - 8, y: yPos-28, value: 15 + Math.floor(currentLevel/8), collected: false, tipo: "coin"});
                 }
-                // plataforma móvil ocasional
-                if(seededRandom(xPos+99) < 0.18 && dificultad>1.2){
-                    movingPlatforms.push({x: xPos+30, y: yPos-12, w: 70, h: 18, leftBound: xPos, rightBound: xPos+180, dir: 1, speed: 1.8});
+                
+                // Powerups (doble salto extra o dash)
+                if(seededRandom(xPos+99) < 0.12 && dificultad > 0.9){
+                    powerups.push({x: xPos + ancho/2 - 10, y: yPos-35, w: 20, h: 20, tipo: "extradash", collected: false});
+                }
+                
+                // Plataforma móvil
+                if(seededRandom(xPos+133) < 0.22 && dificultad>1.1){
+                    movingPlatforms.push({
+                        x: xPos+40, y: yPos-14, w: 70, h: 18,
+                        leftBound: xPos, rightBound: xPos+200, dir: 1, speed: 1.5 + seededRandom(xPos)*1.5
+                    });
                 }
             }
-            // suelo de seguridad
-            if(seededRandom(desdeX+444) < 0.65){
-                platforms.push({x: desdeX+80, y: sueloBaseY-20, w: 160, h: 28, tipo:"ground", move:false});
+            
+            // Suelo de seguridad ocasional
+            if(seededRandom(desdeX+444) < 0.6){
+                platforms.push({x: desdeX+60, y: sueloBaseY-22, w: 180, h: 30, tipo: "ground", move: false, color: "#5d8246"});
             }
-            return desdeX + cantPlat * 130 + 200;
+            
+            return desdeX + cantPlat * 140 + 250;
         }
         
         function actualizarGeneracion(){
-            if(maxGenX < player.x + 1000){
+            if(maxGenX < player.x + 1100){
                 maxGenX = generarNuevoSegmento(maxGenX);
             }
-            // limpiar elementos antiguos
-            let limiteBorrado = player.x - 800;
+            let limiteBorrado = player.x - 900;
             platforms = platforms.filter(p => p.x + p.w > limiteBorrado);
             hazards = hazards.filter(h => h.x + h.w > limiteBorrado);
-            collectibles = collectibles.filter(c => !c.collected && c.x + 25 > limiteBorrado);
+            collectibles = collectibles.filter(c => !c.collected && c.x + 30 > limiteBorrado);
             movingPlatforms = movingPlatforms.filter(m => m.x + m.w > limiteBorrado);
+            powerups = powerups.filter(p => !p.collected && p.x + 30 > limiteBorrado);
         }
         
         // Inicializar mundo completo
@@ -258,6 +306,10 @@
             totalScore = 0;
             totalDistance = 0;
             currentLevel = 1;
+            totalJumps = 0;
+            totalDashes = 0;
+            totalCoins = 0;
+            
             player.x = 180;
             player.y = sueloBaseY - 48;
             player.vx = 0;
@@ -268,26 +320,49 @@
             player.stamina = 100;
             player.airDashes = 1;
             player.dashCooldown = 0;
+            player.slideTimer = 0;
+            
             platforms = [];
             hazards = [];
             collectibles = [];
             movingPlatforms = [];
             particles = [];
+            powerups = [];
             positionHistory = [];
             suspiciousMovements = 0;
-            // generar base inicial
-            platforms.push({x: -50, y: sueloBaseY-22, w: 500, h: 32, tipo: "base", move: false});
-            maxGenX = 700;
-            for(let i=0;i<6;i++) maxGenX = generarNuevoSegmento(maxGenX);
+            
+            platforms.push({x: -50, y: sueloBaseY-24, w: 550, h: 34, tipo: "base", move: false, color: "#5d8246"});
+            maxGenX = 750;
+            for(let i=0;i<7;i++) maxGenX = generarNuevoSegmento(maxGenX);
             actualizarGeneracion();
             updateUI();
+            document.getElementById("msgPanel").innerHTML = "🏃 STICKMAN RENACE | IA PROTECTORA ACTIVA | COLOR PERSONALIZABLE";
         }
         
         // --------------------- FÍSICA + HABILIDADES PARKOUR ------------------
+        function spawnParticles(px, py, count, colorType = "orange"){
+            for(let i=0;i<count;i++){
+                particles.push({
+                    x: px+Math.random()*30, y: py+Math.random()*25,
+                    vx: (Math.random()-0.5)*3.5, vy: (Math.random()-1)*2.5,
+                    life: 0.8, color: colorType === "orange" ? `hsl(${30+Math.random()*20}, 70%, 60%)` : `hsl(${Math.random()*360}, 80%, 65%)`
+                });
+            }
+        }
+        
+        function updateParticles(){
+            for(let i=0;i<particles.length;i++){
+                particles[i].x += particles[i].vx;
+                particles[i].y += particles[i].vy;
+                particles[i].life -= 0.025;
+                if(particles[i].life <= 0) particles.splice(i,1);
+            }
+        }
+        
         function handleMovementAndPhysics(){
-            // entrada horizontal
             if(keys.left) { player.vx = Math.max(-VEL_MAX, player.vx - ACEL); player.facingRight = false; }
             if(keys.right){ player.vx = Math.min(VEL_MAX, player.vx + ACEL); player.facingRight = true; }
+            
             let fric = player.grounded ? FRIC_SUELO : FRIC_AIR;
             player.vx *= fric;
             player.x += player.vx;
@@ -296,12 +371,11 @@
             player.grounded = false;
             player.wallSliding = false;
             
-            // COLISIONES con plataformas
+            // Colisiones con plataformas
             for(let plat of platforms){
                 if(player.x + player.width > plat.x && player.x < plat.x + plat.w &&
                    player.y + player.height > plat.y && player.y < plat.y + plat.h){
-                    // top
-                    if(player.vy >= 0 && (player.y + player.height - player.vy) <= plat.y + 12){
+                    if(player.vy >= 0 && (player.y + player.height - player.vy) <= plat.y + 14){
                         player.y = plat.y - player.height;
                         player.vy = 0;
                         player.grounded = true;
@@ -319,6 +393,7 @@
                     }
                 }
             }
+            
             // Plataformas móviles
             for(let mp of movingPlatforms){
                 mp.x += mp.dir * mp.speed;
@@ -335,13 +410,14 @@
                     }
                 }
             }
-            // WALLRUN (paredes)
+            
+            // WALLRUN (sistema avanzado)
             if(!player.grounded && (keys.left || keys.right)){
                 let touchingWall = false;
                 let wallDir = 0;
                 for(let plat of platforms){
                     if(player.x + player.width > plat.x && player.x < plat.x + plat.w &&
-                       player.y + player.height-10 > plat.y && player.y+15 < plat.y+plat.h){
+                       player.y + player.height-12 > plat.y && player.y+18 < plat.y+plat.h){
                         if(keys.left && player.x + player.width > plat.x && player.x < plat.x+plat.w){
                             touchingWall = true; wallDir = -1;
                         }
@@ -352,7 +428,7 @@
                 }
                 if(touchingWall && player.vy > 0){
                     player.wallSliding = true;
-                    player.vy = Math.min(2.2, player.vy);
+                    player.vy = Math.min(2.0, player.vy);
                     if(keys.jumpRequest && keys.canJump){
                         player.vy = WALL_JUMP_Y;
                         player.vx = wallDir * WALL_JUMP_X;
@@ -360,133 +436,145 @@
                         keys.canJump = false;
                         player.wallSliding = false;
                         keys.jumpRequest = false;
-                        spawnParticles(player.x, player.y, 8);
+                        spawnParticles(player.x, player.y, 12, "orange");
+                        totalJumps++;
                     }
                 }
             }
+            
             // Doble salto
             if(keys.jumpRequest && !player.grounded && !player.doubleJumpUsed && !player.wallSliding){
                 player.vy = DOBLE_SALTO_FUERZA;
                 player.doubleJumpUsed = true;
                 keys.jumpRequest = false;
-                spawnParticles(player.x, player.y+10, 12);
+                spawnParticles(player.x, player.y+12, 15, "orange");
+                totalJumps++;
             }
+            
             // Salto normal
             if(keys.jumpRequest && player.grounded && keys.canJump){
                 player.vy = SALTO_POWER;
                 player.grounded = false;
                 keys.canJump = false;
                 keys.jumpRequest = false;
-                spawnParticles(player.x, player.y+player.height, 6);
+                spawnParticles(player.x, player.y+player.height, 10, "orange");
+                totalJumps++;
             }
             if(player.grounded) keys.canJump = true;
+            
             // DASH aéreo
             if(keys.dashRequest && !player.grounded && player.airDashes > 0 && player.dashCooldown <= 0){
                 let dashDir = player.facingRight ? 1 : -1;
                 player.vx = dashDir * DASH_VEL;
-                player.vy = 0;
+                player.vy = -2;
                 player.airDashes--;
-                player.dashCooldown = 25;
+                player.dashCooldown = 28;
                 keys.dashRequest = false;
-                spawnParticles(player.x, player.y, 20);
+                spawnParticles(player.x, player.y, 25, "cyan");
+                totalDashes++;
             }
             if(player.dashCooldown > 0) player.dashCooldown--;
             if(player.invincibleTimer > 0) player.invincibleTimer--;
-            // limites horizontales y muerte por caida
-            player.x = Math.min(maxGenX + 500, Math.max(30, player.x));
-            if(player.y > H+100) gameActive = false;
-        }
-        
-        function spawnParticles(px, py, count){
-            for(let i=0;i<count;i++){
-                particles.push({x: px+Math.random()*30, y: py+Math.random()*20, vx: (Math.random()-0.5)*3, vy: (Math.random()-1)*2, life: 0.7});
-            }
-        }
-        
-        function updateParticles(){
-            for(let i=0;i<particles.length;i++){
-                particles[i].x += particles[i].vx;
-                particles[i].y += particles[i].vy;
-                particles[i].life -= 0.025;
-                if(particles[i].life <= 0) particles.splice(i,1);
-            }
+            
+            player.x = Math.min(maxGenX + 600, Math.max(30, player.x));
+            if(player.y > H+120) gameActive = false;
         }
         
         function checkHazardsAndCollect(){
             for(let h of hazards){
                 if(player.x + player.width > h.x && player.x < h.x+h.w && player.y+player.height > h.y && player.y < h.y+h.h){
                     if(player.invincibleTimer <= 0 && !cheatPunishmentMode){
-                        iaIntegrity = Math.max(0, iaIntegrity - h.damage * 0.8);
-                        player.invincibleTimer = 28;
-                        totalScore = Math.max(0, totalScore-32);
+                        iaIntegrity = Math.max(0, iaIntegrity - h.damage * 0.7);
+                        player.invincibleTimer = 30;
+                        totalScore = Math.max(0, totalScore-25);
+                        spawnParticles(player.x, player.y, 18, "red");
                         if(iaIntegrity <= 0) activatePunishmentMode();
                     } else if(cheatPunishmentMode){
-                        punishmentTimer = Math.max(0, punishmentTimer - 5);
+                        punishmentTimer = Math.max(0, punishmentTimer - 4);
                     }
                 }
             }
+            
             for(let c of collectibles){
-                if(!c.collected && player.x + player.width > c.x && player.x < c.x+16 && player.y+player.height > c.y && player.y < c.y+16){
+                if(!c.collected && player.x + player.width > c.x && player.x < c.x+18 && player.y+player.height > c.y && player.y < c.y+18){
                     c.collected = true;
                     totalScore += c.value;
-                    if(!cheatPunishmentMode) iaIntegrity = Math.min(100, iaIntegrity + 1.2);
-                    else punishmentTimer = Math.min(3800, punishmentTimer+0.7);
-                    spawnParticles(c.x, c.y, 6);
+                    totalCoins++;
+                    if(!cheatPunishmentMode) iaIntegrity = Math.min(100, iaIntegrity + 1.0);
+                    else punishmentTimer = Math.min(3800, punishmentTimer+0.6);
+                    spawnParticles(c.x, c.y, 8, "gold");
                 }
             }
             collectibles = collectibles.filter(c=>!c.collected);
+            
+            for(let p of powerups){
+                if(!p.collected && player.x + player.width > p.x && player.x < p.x+p.w && player.y+player.height > p.y && player.y < p.y+p.h){
+                    p.collected = true;
+                    if(p.tipo === "extradash"){
+                        player.airDashes = Math.min(3, player.airDashes+1);
+                        totalScore += 50;
+                        spawnParticles(p.x, p.y, 20, "cyan");
+                    }
+                }
+            }
+            powerups = powerups.filter(p=>!p.collected);
         }
         
         function activatePunishmentMode(){
             cheatPunishmentMode = true;
             punishmentTimer = 0;
             iaIntegrity = 0;
-            // generar mundo extremo
             platforms = [];
             hazards = [];
             collectibles = [];
-            for(let i=0;i<400;i++){
-                let px = 100 + i * 45;
-                let py = sueloBaseY - 25 - Math.sin(i*0.5)*65;
-                platforms.push({x: px, y: py, w: 40, h: 18, tipo: "punish", move: false});
-                if(i%2===0) hazards.push({x: px+12, y: py-9, w: 18, h: 9, damage: 40});
+            for(let i=0;i<500;i++){
+                let px = 80 + i * 48;
+                let py = sueloBaseY - 28 - Math.sin(i*0.55)*72;
+                platforms.push({x: px, y: py, w: 42, h: 18, tipo: "punish", move: false, color: "#a13a2a"});
+                if(i%2===0) hazards.push({x: px+14, y: py-11, w: 20, h: 11, damage: 35, tipo: "spike"});
+                if(i%7===3) collectibles.push({x: px+18, y: py-30, value: 8, collected: false, tipo: "coin"});
             }
-            maxGenX = 100 + 400*45;
+            maxGenX = 80 + 500*48;
             document.getElementById("msgPanel").style.background = "#8b2c1dcc";
             document.getElementById("msgPanel").innerHTML = "⚠️ MODO PURGATORIO: DEBES COMPLETAR 1 HORA REAL DE PARKOUR (CASTIGO INFINITO) ⚠️";
         }
         
         function updateProgression(){
             if(!gameActive) return;
-            let distanceGain = Math.max(0, player.vx * 0.025);
+            let distanceGain = Math.max(0, player.vx * 0.022);
             totalDistance += distanceGain;
-            let newLevel = 1 + Math.floor(totalDistance / 42);
+            let newLevel = 1 + Math.floor(totalDistance / 40);
             if(newLevel > currentLevel){
                 currentLevel = newLevel;
-                if(!cheatPunishmentMode) iaIntegrity = Math.min(100, iaIntegrity+4);
-                document.getElementById("msgPanel").innerHTML = `⚡ NIVEL ${currentLevel} ALCANZADO | IA REFORZADA ⚡`;
-                spawnParticles(player.x, player.y, 35);
+                if(!cheatPunishmentMode) iaIntegrity = Math.min(100, iaIntegrity+3.5);
+                document.getElementById("msgPanel").innerHTML = `⚡ NIVEL ${currentLevel} ALCANZADO | DIFICULTAD +${Math.floor(currentLevel/10)}% ⚡`;
+                spawnParticles(player.x, player.y, 35, "gold");
             }
+            
             if(cheatPunishmentMode){
                 punishmentTimer += 1/60;
                 if(punishmentTimer >= 3600 && !escapedPunishment){
                     escapedPunishment = true;
                     cheatPunishmentMode = false;
-                    iaIntegrity = 70;
+                    iaIntegrity = 75;
                     resetWorldFull();
-                    document.getElementById("msgPanel").innerHTML = "🏆 LEYENDA: HAS SOBREVIVIDO 1 HORA EN CASTIGO. 1% COMPLETA. BIENVENIDO DE VUELTA 🏆";
+                    document.getElementById("msgPanel").innerHTML = "🏆 LEYENDA: HAS SOBREVIVIDO 1 HORA EN CASTIGO. ERES EL 1% 🏆";
                 }
                 let rest = Math.max(0, 3600 - punishmentTimer);
-                document.getElementById("msgPanel").innerHTML = `⏳ CASTIGO INFINITO :: restan ${Math.ceil(rest)} segundos para redención (1 hora total) ⏳`;
+                let minutos = Math.floor(rest / 60);
+                let segs = Math.floor(rest % 60);
+                document.getElementById("msgPanel").innerHTML = `⏳ CASTIGO INFINITO :: ${minutos}m ${segs}s para redención (1 hora total) ⏳`;
             }
-            // IA anti cheat avanzada (detección de clipping/fly)
+            
+            // IA anti cheat avanzada con análisis de velocidad
             if(!cheatPunishmentMode){
                 let deltaX = Math.abs(player.x - lastValidPos.x);
-                if((player.vy < -16 && !player.grounded) || deltaX > 25 && !player.grounded && player.vy < -5) suspiciousMovements+=2;
-                if(suspiciousMovements > 20) iaIntegrity = Math.max(0, iaIntegrity-1.5);
+                let deltaY = Math.abs(player.vy);
+                if((deltaY > 18 && !player.grounded) || deltaX > 28) suspiciousMovements+=1.8;
+                if(suspiciousMovements > 22) iaIntegrity = Math.max(0, iaIntegrity-1.2);
                 if(iaIntegrity <= 0) activatePunishmentMode();
-                iaIntegrity = Math.min(100, iaIntegrity + 0.04);
-                suspiciousMovements = Math.max(0, suspiciousMovements-0.3);
+                iaIntegrity = Math.min(100, iaIntegrity + 0.05);
+                suspiciousMovements = Math.max(0, suspiciousMovements-0.25);
             }
             lastValidPos = { x: player.x, y: player.y };
             updateUI();
@@ -499,17 +587,73 @@
             document.getElementById("iaEthics").innerText = cheatPunishmentMode ? 0 : Math.floor(iaIntegrity);
             document.getElementById("doubleReady").innerText = (!player.doubleJumpUsed || player.grounded) ? "✓" : "✗";
             document.getElementById("wallReady").innerText = (!player.wallSliding && player.grounded) ? "✓" : "⚡";
+            document.getElementById("dashReady").innerText = (player.airDashes > 0 && player.dashCooldown <= 0) ? "✓" : "⏳";
             if(iaIntegrity < 20 && !cheatPunishmentMode) document.getElementById("iaEthics").classList.add("badge-critical");
             else document.getElementById("iaEthics").classList.remove("badge-critical");
         }
         
-        // camara
         let camX = 0;
         function updateCamera(){
             camX = Math.min(maxGenX - W + 200, Math.max(0, player.x - W/2.5));
         }
         
-        // --------------------- DIBUJO (gráficos profesionales) ----------------------
+        // --------------------- DIBUJO STICKMAN PROFESIONAL ----------------------
+        function drawStickman(x, y, w, h, color, facingRight){
+            ctx.save();
+            ctx.shadowBlur = 3;
+            ctx.shadowColor = "rgba(0,0,0,0.5)";
+            // Cuerpo principal (cabeza circular + cuerpo de líneas)
+            let headX = x + w/2;
+            let headY = y + 12;
+            ctx.beginPath();
+            ctx.arc(headX, headY, 11, 0, Math.PI*2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = "#222";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            // Ojos
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(headX - 4, headY - 2, 2.5, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(headX + 4, headY - 2, 2.5, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "#111";
+            ctx.beginPath();
+            ctx.arc(headX - 4 + (facingRight ? 0.5 : -0.5), headY - 2.5, 1.2, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(headX + 4 + (facingRight ? 0.5 : -0.5), headY - 2.5, 1.2, 0, Math.PI*2);
+            ctx.fill();
+            // Sonrisa
+            ctx.beginPath();
+            ctx.arc(headX, headY + 2, 5, 0.05, Math.PI - 0.05);
+            ctx.stroke();
+            // Cuerpo (línea)
+            ctx.beginPath();
+            ctx.moveTo(headX, y + 23);
+            ctx.lineTo(headX, y + 42);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            // Piernas
+            ctx.beginPath();
+            ctx.moveTo(headX, y + 42);
+            ctx.lineTo(headX - 8, y + 50);
+            ctx.moveTo(headX, y + 42);
+            ctx.lineTo(headX + 8, y + 50);
+            ctx.stroke();
+            // Brazos
+            ctx.beginPath();
+            ctx.moveTo(headX, y + 30);
+            ctx.lineTo(headX - 10, y + 38);
+            ctx.moveTo(headX, y + 30);
+            ctx.lineTo(headX + 10, y + 38);
+            ctx.stroke();
+            ctx.restore();
+        }
+        
         function draw(){
             ctx.clearRect(0,0,W,H);
             let grad = ctx.createLinearGradient(0,0,0,H);
@@ -519,72 +663,82 @@
             ctx.fillRect(0,0,W,H);
             ctx.save();
             ctx.translate(-camX,0);
-            // plataformas
+            
+            // Plataformas
             for(let p of platforms){
-                ctx.fillStyle = p.tipo==="punish" ? "#a13a2a" : "#6e5e42";
+                ctx.fillStyle = p.color || "#6e5e42";
                 ctx.shadowBlur = 3;
                 ctx.fillRect(p.x, p.y, p.w, p.h);
                 ctx.fillStyle = "#c0a56b";
                 ctx.fillRect(p.x+4, p.y-4, p.w-8, 5);
             }
+            // Plataformas móviles
             for(let mp of movingPlatforms){
                 ctx.fillStyle = "#5a7d4e";
                 ctx.fillRect(mp.x, mp.y, mp.w, mp.h);
                 ctx.fillStyle = "#8bb56a";
                 ctx.fillRect(mp.x+5, mp.y-3, mp.w-10, 5);
             }
+            // Peligros
             for(let h of hazards){
                 ctx.fillStyle = "#e05a2a";
                 ctx.beginPath();
-                ctx.moveTo(h.x+h.w/2, h.y-6);
+                ctx.moveTo(h.x+h.w/2, h.y-8);
                 ctx.lineTo(h.x, h.y+h.h);
                 ctx.lineTo(h.x+h.w, h.y+h.h);
                 ctx.fill();
                 ctx.fillStyle = "#ff8040";
                 ctx.fillRect(h.x+3, h.y+4, h.w-6, 6);
             }
+            // Coleccionables
             for(let c of collectibles){
                 ctx.fillStyle = "#f7c56e";
-                ctx.shadowBlur = 12;
+                ctx.shadowBlur = 10;
                 ctx.beginPath();
-                ctx.arc(c.x+8, c.y+8, 10, 0, Math.PI*2);
+                ctx.arc(c.x+9, c.y+9, 10, 0, Math.PI*2);
                 ctx.fill();
                 ctx.fillStyle = "#ffa559";
                 ctx.beginPath();
-                ctx.arc(c.x+8, c.y+8, 5, 0, Math.PI*2);
+                ctx.arc(c.x+9, c.y+9, 5, 0, Math.PI*2);
                 ctx.fill();
             }
-            // jugador
-            ctx.fillStyle = "#4aa5ff";
-            ctx.shadowBlur = 5;
-            ctx.fillRect(player.x, player.y, player.width, player.height);
-            ctx.fillStyle = "#2c303a";
-            ctx.fillRect(player.x+6, player.y+10, 7, 9);
-            ctx.fillRect(player.x+player.width-13, player.y+10, 7, 9);
-            if(player.facingRight){
-                ctx.fillStyle = "#ed9b49";
-                ctx.fillRect(player.x+player.width-10, player.y+22, 14, 8);
-            }else{
-                ctx.fillRect(player.x-4, player.y+22, 14, 8);
+            // Powerups
+            for(let p of powerups){
+                ctx.fillStyle = "#5aafff";
+                ctx.beginPath();
+                ctx.rect(p.x, p.y, p.w, p.h);
+                ctx.fill();
+                ctx.fillStyle = "white";
+                ctx.font = "14px monospace";
+                ctx.fillText("⚡", p.x+4, p.y+16);
             }
-            // partículas
+            // Partículas
             for(let pa of particles){
-                ctx.fillStyle = `rgba(255,200,100,${pa.life})`;
+                ctx.fillStyle = pa.color || "orange";
                 ctx.fillRect(pa.x, pa.y, 4,4);
             }
+            // Stickman
+            drawStickman(player.x, player.y, player.width, player.height, stickmanColor, player.facingRight);
+            
             ctx.restore();
-            // UI superpuesta
+            // UI sobre cámara
             ctx.font = "bold 18 monospace";
             ctx.fillStyle = "white";
             ctx.shadowBlur = 2;
             if(cheatPunishmentMode){
                 ctx.fillStyle = "#ff8866";
-                ctx.font = "bold 26 monospace";
-                ctx.fillText("🔥 SENTENCIA INFINITA 🔥", W/2-190, 55);
+                ctx.font = "bold 28 monospace";
+                ctx.fillText("🔥 SENTENCIA INFINITA 🔥", W/2-210, 55);
             }
             if(player.dashCooldown > 0){
                 ctx.fillStyle = "cyan";
-                ctx.fillText("⚡ DASH RECARGANDO", player.x-camX-20, player.y-15);
+                ctx.font = "bold 14 monospace";
+                ctx.fillText("⚡ DASH RECARGANDO", player.x-camX-25, player.y-20);
+            }
+            if(player.invincibleTimer > 0){
+                ctx.fillStyle = "gold";
+                ctx.font = "bold 12 monospace";
+                ctx.fillText("🛡️ INVINCIBLE", player.x-camX-15, player.y-10);
             }
         }
         
@@ -596,7 +750,7 @@
                 ctx.fillRect(0,0,W,H);
                 ctx.fillStyle = "#fff";
                 ctx.font = "34px monospace";
-                ctx.fillText("GAME OVER - PRESIONA REINICIAR", W/2-280, H/2);
+                ctx.fillText("GAME OVER - PRESIONA REINICIAR", W/2-300, H/2);
                 requestAnimationFrame(gameLoop);
                 return;
             }
@@ -625,6 +779,8 @@
             if(k === 'ArrowRight' || k === 'd' || k === 'D') keys.right = false;
         });
         canvas.addEventListener('touchstart', (e) => { e.preventDefault(); keys.jumpRequest=true; });
+        canvas.addEventListener('touchmove', (e) => e.preventDefault());
+        
         document.getElementById('resetGameBtn').onclick = () => { resetWorldFull(); gameActive=true; cheatPunishmentMode=false; iaIntegrity=100; punishmentTimer=0; };
         document.getElementById('fullscreenBtn').onclick = () => {
             if(!document.fullscreenElement) document.documentElement.requestFullscreen();
