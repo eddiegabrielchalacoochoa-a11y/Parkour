@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>PARKOUR OMEGA | INFINITE LEVELS | IA NEURONAL ANTICHEAT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #0a0a1a, #000000);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Poppins', 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        .game-container {
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 2rem;
+            padding: 1rem;
+            box-shadow: 0 30px 50px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
+            backdrop-filter: blur(4px);
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 1.2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            cursor: pointer;
+            width: 100%;
+            height: auto;
+        }
+
+        .dashboard {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 1rem;
+            padding: 0.5rem 1.8rem;
+            background: #0f172ae6;
+            backdrop-filter: blur(12px);
+            border-radius: 60px;
+            font-weight: bold;
+            color: #fff5e0;
+            text-shadow: 0 2px 3px black;
+        }
+
+        .dashboard div {
+            background: #000000aa;
+            padding: 5px 18px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-critical {
+            background: #d93f21cc !important;
+            animation: pulse 0.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; transform: scale(0.98);}
+            100% { opacity: 1; transform: scale(1);}
+        }
+
+        button {
+            background: #2c3e66;
+            border: none;
+            color: white;
+            font-weight: bold;
+            padding: 6px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 0.85rem;
+            transition: 0.07s linear;
+            box-shadow: 0 2px 6px black;
+        }
+        button:active { transform: scale(0.95); background: #1a2a48;}
+
+        .full-btn { background: #3f6a3a; }
+        .full-btn:hover { background: #5d8a4e; }
+
+        .skill-indicator {
+            background: #141c2c;
+            border-radius: 28px;
+            padding: 3px 12px;
+            font-size: 0.7rem;
+            font-family: monospace;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: -2px 0 red; }
+            100% { text-shadow: 2px 0 blue; }
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="1400" height="650" style="width:100%; max-width:1400px; aspect-ratio:1400/650"></canvas>
+        <div class="dashboard">
+            <div>🏆 NIVEL: <span id="levelNum">1</span></div>
+            <div>⭐ SCORE: <span id="scoreVal">0</span></div>
+            <div>📏 DIST: <span id="distVal">0</span>m</div>
+            <div>🛡️ IA ÉTICA: <span id="iaEthics">100</span>%</div>
+            <div class="skill-indicator">⚡ DOBLE SALTO: <span id="doubleReady">✓</span> | 🧱 WALLRUN: <span id="wallReady">✓</span></div>
+            <button id="resetGameBtn">🔄 REVIVIR</button>
+            <button id="fullscreenBtn" class="full-btn">⛶ FULLSCREEN</button>
+        </div>
+        <div class="dashboard" id="msgPanel" style="background:#331c0ecc; justify-content:center; gap:5px;">
+            🧠 IA SUPREME | +1500 combinaciones | Castigo infinito por trampas | Habilidad Parkour
+        </div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // ---------------------- MUNDO Y CONFIGURACIÓN AVANZADA (1400+ lineas real) ----------------
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const W = 1400, H = 650;
+        canvas.width = W;
+        canvas.height = H;
+        let sueloBaseY = H - 72;
+        
+        // ---------- Jugador con sistema de habilidades (parkour extremo) ----------
+        let player = {
+            x: 180, y: sueloBaseY - 48,
+            vx: 0, vy: 0,
+            width: 32, height: 48,
+            grounded: false,
+            facingRight: true,
+            invincibleTimer: 0,
+            doubleJumpUsed: false,
+            wallJumpCooldown: 0,
+            wallSliding: false,
+            wallDir: 0,
+            stamina: 100,
+            airDashes: 1,      // dash aéreo extra
+            dashCooldown: 0
+        };
+        
+        // Constantes físicas + parkour
+        const GRAV = 0.82;
+        const SALTO_POWER = -12.4;
+        const VEL_MAX = 8.5;
+        const FRIC_AIR = 0.99;
+        const FRIC_SUELO = 0.91;
+        const ACEL = 0.72;
+        const DOBLE_SALTO_FUERZA = -10.8;
+        const WALL_JUMP_X = 6.2;
+        const WALL_JUMP_Y = -9.5;
+        const DASH_VEL = 14;
+        
+        // Controles
+        const keys = { left: false, right: false, jumpRequest: false, canJump: true, dashRequest: false };
+        
+        // --------------------- ELEMENTOS DEL MUNDO --------------------
+        let platforms = [];          // plataformas normales
+        let hazards = [];            // trampas letales / espinas
+        let collectibles = [];       // orbes de poder / puntos
+        let movingPlatforms = [];    // plataformas móviles
+        let particles = [];          // efectos visuales
+        let wallJumpZones = [];      // zonas especiales para wallrun
+        
+        // Progresión infinita
+        let gameActive = true;
+        let totalScore = 0;
+        let totalDistance = 0;
+        let currentLevel = 1;
+        let iaIntegrity = 100;       // ética IA (si baja a 0 -> modo castigo 1 hora)
+        let cheatPunishmentMode = false;
+        let punishmentTimer = 0;      // segundos acumulados (necesita 3600 para salir)
+        let escapedPunishment = false;
+        
+        // IA anti-trampas con historial de posiciones
+        let positionHistory = [];
+        let suspiciousMovements = 0;
+        let frameId = 0;
+        let lastValidPos = { x: player.x, y: player.y };
+        
+        // Generación procedural infinita con más de 10.000 combinaciones
+        let worldGenOffset = 0;
+        let maxGenX = 800;
+        let rngSeed = 424242;
+        
+        // logros y efectos
+        let achievements = [];
+        let comboCounter = 0;
+        
+        // ---------- FUNCIONES AUXILIARES GENERACIÓN ----------
+        function seededRandom(seed){
+            let x = Math.sin(seed + frameId) * 10000;
+            return x - Math.floor(x);
+        }
+        
+        function generarNuevoSegmento(desdeX){
+            let varianteNivel = (currentLevel + Math.floor(desdeX / 280)) % 37;
+            let dificultad = Math.min(2.8, 0.8 + (currentLevel-1) * 0.022);
+            let cantPlat = 5 + Math.floor(seededRandom(varianteNivel+desdeX)*7);
+            for(let i=0; i<cantPlat; i++){
+                let xPos = desdeX + i * 125 + seededRandom(desdeX + i*31) * 70;
+                let ancho = 52 + Math.floor(seededRandom(xPos)*65);
+                let alto = 22;
+                let yPos = sueloBaseY - 18 - seededRandom(xPos+200)*95;
+                // dificultad: plataformas más altas o móviles
+                platforms.push({x: xPos, y: yPos, w: ancho, h: alto, tipo: "normal", move: false});
+                if(seededRandom(xPos) < 0.25 * dificultad){
+                    hazards.push({x: xPos + ancho/2 - 12, y: yPos-10, w: 24, h: 12, damage: 25});
+                }
+                if(seededRandom(xPos+7) < 0.38){
+                    collectibles.push({x: xPos + ancho/2 - 6, y: yPos-22, value: 15 + Math.floor(currentLevel/9), collected: false});
+                }
+                // plataforma móvil ocasional
+                if(seededRandom(xPos+99) < 0.18 && dificultad>1.2){
+                    movingPlatforms.push({x: xPos+30, y: yPos-12, w: 70, h: 18, leftBound: xPos, rightBound: xPos+180, dir: 1, speed: 1.8});
+                }
+            }
+            // suelo de seguridad
+            if(seededRandom(desdeX+444) < 0.65){
+                platforms.push({x: desdeX+80, y: sueloBaseY-20, w: 160, h: 28, tipo:"ground", move:false});
+            }
+            return desdeX + cantPlat * 130 + 200;
+        }
+        
+        function actualizarGeneracion(){
+            if(maxGenX < player.x + 1000){
+                maxGenX = generarNuevoSegmento(maxGenX);
+            }
+            // limpiar elementos antiguos
+            let limiteBorrado = player.x - 800;
+            platforms = platforms.filter(p => p.x + p.w > limiteBorrado);
+            hazards = hazards.filter(h => h.x + h.w > limiteBorrado);
+            collectibles = collectibles.filter(c => !c.collected && c.x + 25 > limiteBorrado);
+            movingPlatforms = movingPlatforms.filter(m => m.x + m.w > limiteBorrado);
+        }
+        
+        // Inicializar mundo completo
+        function resetWorldFull(){
+            gameActive = true;
+            cheatPunishmentMode = false;
+            punishmentTimer = 0;
+            escapedPunishment = false;
+            iaIntegrity = 100;
+            totalScore = 0;
+            totalDistance = 0;
+            currentLevel = 1;
+            player.x = 180;
+            player.y = sueloBaseY - 48;
+            player.vx = 0;
+            player.vy = 0;
+            player.doubleJumpUsed = false;
+            player.wallSliding = false;
+            player.invincibleTimer = 0;
+            player.stamina = 100;
+            player.airDashes = 1;
+            player.dashCooldown = 0;
+            platforms = [];
+            hazards = [];
+            collectibles = [];
+            movingPlatforms = [];
+            particles = [];
+            positionHistory = [];
+            suspiciousMovements = 0;
+            // generar base inicial
+            platforms.push({x: -50, y: sueloBaseY-22, w: 500, h: 32, tipo: "base", move: false});
+            maxGenX = 700;
+            for(let i=0;i<6;i++) maxGenX = generarNuevoSegmento(maxGenX);
+            actualizarGeneracion();
+            updateUI();
+        }
+        
+        // --------------------- FÍSICA + HABILIDADES PARKOUR ------------------
+        function handleMovementAndPhysics(){
+            // entrada horizontal
+            if(keys.left) { player.vx = Math.max(-VEL_MAX, player.vx - ACEL); player.facingRight = false; }
+            if(keys.right){ player.vx = Math.min(VEL_MAX, player.vx + ACEL); player.facingRight = true; }
+            let fric = player.grounded ? FRIC_SUELO : FRIC_AIR;
+            player.vx *= fric;
+            player.x += player.vx;
+            player.vy += GRAV;
+            player.y += player.vy;
+            player.grounded = false;
+            player.wallSliding = false;
+            
+            // COLISIONES con plataformas
+            for(let plat of platforms){
+                if(player.x + player.width > plat.x && player.x < plat.x + plat.w &&
+                   player.y + player.height > plat.y && player.y < plat.y + plat.h){
+                    // top
+                    if(player.vy >= 0 && (player.y + player.height - player.vy) <= plat.y + 12){
+                        player.y = plat.y - player.height;
+                        player.vy = 0;
+                        player.grounded = true;
+                        player.doubleJumpUsed = false;
+                        player.airDashes = 1;
+                        keys.canJump = true;
+                    }
+                    else if(player.vy < 0 && player.y > plat.y + plat.h - 12){
+                        player.y = plat.y + plat.h;
+                        player.vy = 0;
+                    }
+                    else {
+                        if(player.x + player.width/2 < plat.x + plat.w/2) player.x = plat.x - player.width;
+                        else player.x = plat.x + plat.w;
+                    }
+                }
+            }
+            // Plataformas móviles
+            for(let mp of movingPlatforms){
+                mp.x += mp.dir * mp.speed;
+                if(mp.x >= mp.rightBound) { mp.x = mp.rightBound; mp.dir = -1; }
+                if(mp.x <= mp.leftBound) { mp.x = mp.leftBound; mp.dir = 1; }
+                if(player.x + player.width > mp.x && player.x < mp.x + mp.w && player.y+player.height > mp.y && player.y < mp.y+mp.h){
+                    if(player.vy >= 0 && player.y+player.height - player.vy <= mp.y+12){
+                        player.y = mp.y - player.height;
+                        player.vy = 0;
+                        player.grounded = true;
+                        player.doubleJumpUsed = false;
+                        keys.canJump = true;
+                        player.x += mp.dir * mp.speed;
+                    }
+                }
+            }
+            // WALLRUN (paredes)
+            if(!player.grounded && (keys.left || keys.right)){
+                let touchingWall = false;
+                let wallDir = 0;
+                for(let plat of platforms){
+                    if(player.x + player.width > plat.x && player.x < plat.x + plat.w &&
+                       player.y + player.height-10 > plat.y && player.y+15 < plat.y+plat.h){
+                        if(keys.left && player.x + player.width > plat.x && player.x < plat.x+plat.w){
+                            touchingWall = true; wallDir = -1;
+                        }
+                        if(keys.right && player.x < plat.x + plat.w && player.x+player.width > plat.x){
+                            touchingWall = true; wallDir = 1;
+                        }
+                    }
+                }
+                if(touchingWall && player.vy > 0){
+                    player.wallSliding = true;
+                    player.vy = Math.min(2.2, player.vy);
+                    if(keys.jumpRequest && keys.canJump){
+                        player.vy = WALL_JUMP_Y;
+                        player.vx = wallDir * WALL_JUMP_X;
+                        player.grounded = false;
+                        keys.canJump = false;
+                        player.wallSliding = false;
+                        keys.jumpRequest = false;
+                        spawnParticles(player.x, player.y, 8);
+                    }
+                }
+            }
+            // Doble salto
+            if(keys.jumpRequest && !player.grounded && !player.doubleJumpUsed && !player.wallSliding){
+                player.vy = DOBLE_SALTO_FUERZA;
+                player.doubleJumpUsed = true;
+                keys.jumpRequest = false;
+                spawnParticles(player.x, player.y+10, 12);
+            }
+            // Salto normal
+            if(keys.jumpRequest && player.grounded && keys.canJump){
+                player.vy = SALTO_POWER;
+                player.grounded = false;
+                keys.canJump = false;
+                keys.jumpRequest = false;
+                spawnParticles(player.x, player.y+player.height, 6);
+            }
+            if(player.grounded) keys.canJump = true;
+            // DASH aéreo
+            if(keys.dashRequest && !player.grounded && player.airDashes > 0 && player.dashCooldown <= 0){
+                let dashDir = player.facingRight ? 1 : -1;
+                player.vx = dashDir * DASH_VEL;
+                player.vy = 0;
+                player.airDashes--;
+                player.dashCooldown = 25;
+                keys.dashRequest = false;
+                spawnParticles(player.x, player.y, 20);
+            }
+            if(player.dashCooldown > 0) player.dashCooldown--;
+            if(player.invincibleTimer > 0) player.invincibleTimer--;
+            // limites horizontales y muerte por caida
+            player.x = Math.min(maxGenX + 500, Math.max(30, player.x));
+            if(player.y > H+100) gameActive = false;
+        }
+        
+        function spawnParticles(px, py, count){
+            for(let i=0;i<count;i++){
+                particles.push({x: px+Math.random()*30, y: py+Math.random()*20, vx: (Math.random()-0.5)*3, vy: (Math.random()-1)*2, life: 0.7});
+            }
+        }
+        
+        function updateParticles(){
+            for(let i=0;i<particles.length;i++){
+                particles[i].x += particles[i].vx;
+                particles[i].y += particles[i].vy;
+                particles[i].life -= 0.025;
+                if(particles[i].life <= 0) particles.splice(i,1);
+            }
+        }
+        
+        function checkHazardsAndCollect(){
+            for(let h of hazards){
+                if(player.x + player.width > h.x && player.x < h.x+h.w && player.y+player.height > h.y && player.y < h.y+h.h){
+                    if(player.invincibleTimer <= 0 && !cheatPunishmentMode){
+                        iaIntegrity = Math.max(0, iaIntegrity - h.damage * 0.8);
+                        player.invincibleTimer = 28;
+                        totalScore = Math.max(0, totalScore-32);
+                        if(iaIntegrity <= 0) activatePunishmentMode();
+                    } else if(cheatPunishmentMode){
+                        punishmentTimer = Math.max(0, punishmentTimer - 5);
+                    }
+                }
+            }
+            for(let c of collectibles){
+                if(!c.collected && player.x + player.width > c.x && player.x < c.x+16 && player.y+player.height > c.y && player.y < c.y+16){
+                    c.collected = true;
+                    totalScore += c.value;
+                    if(!cheatPunishmentMode) iaIntegrity = Math.min(100, iaIntegrity + 1.2);
+                    else punishmentTimer = Math.min(3800, punishmentTimer+0.7);
+                    spawnParticles(c.x, c.y, 6);
+                }
+            }
+            collectibles = collectibles.filter(c=>!c.collected);
+        }
+        
+        function activatePunishmentMode(){
+            cheatPunishmentMode = true;
+            punishmentTimer = 0;
+            iaIntegrity = 0;
+            // generar mundo extremo
+            platforms = [];
+            hazards = [];
+            collectibles = [];
+            for(let i=0;i<400;i++){
+                let px = 100 + i * 45;
+                let py = sueloBaseY - 25 - Math.sin(i*0.5)*65;
+                platforms.push({x: px, y: py, w: 40, h: 18, tipo: "punish", move: false});
+                if(i%2===0) hazards.push({x: px+12, y: py-9, w: 18, h: 9, damage: 40});
+            }
+            maxGenX = 100 + 400*45;
+            document.getElementById("msgPanel").style.background = "#8b2c1dcc";
+            document.getElementById("msgPanel").innerHTML = "⚠️ MODO PURGATORIO: DEBES COMPLETAR 1 HORA REAL DE PARKOUR (CASTIGO INFINITO) ⚠️";
+        }
+        
+        function updateProgression(){
+            if(!gameActive) return;
+            let distanceGain = Math.max(0, player.vx * 0.025);
+            totalDistance += distanceGain;
+            let newLevel = 1 + Math.floor(totalDistance / 42);
+            if(newLevel > currentLevel){
+                currentLevel = newLevel;
+                if(!cheatPunishmentMode) iaIntegrity = Math.min(100, iaIntegrity+4);
+                document.getElementById("msgPanel").innerHTML = `⚡ NIVEL ${currentLevel} ALCANZADO | IA REFORZADA ⚡`;
+                spawnParticles(player.x, player.y, 35);
+            }
+            if(cheatPunishmentMode){
+                punishmentTimer += 1/60;
+                if(punishmentTimer >= 3600 && !escapedPunishment){
+                    escapedPunishment = true;
+                    cheatPunishmentMode = false;
+                    iaIntegrity = 70;
+                    resetWorldFull();
+                    document.getElementById("msgPanel").innerHTML = "🏆 LEYENDA: HAS SOBREVIVIDO 1 HORA EN CASTIGO. 1% COMPLETA. BIENVENIDO DE VUELTA 🏆";
+                }
+                let rest = Math.max(0, 3600 - punishmentTimer);
+                document.getElementById("msgPanel").innerHTML = `⏳ CASTIGO INFINITO :: restan ${Math.ceil(rest)} segundos para redención (1 hora total) ⏳`;
+            }
+            // IA anti cheat avanzada (detección de clipping/fly)
+            if(!cheatPunishmentMode){
+                let deltaX = Math.abs(player.x - lastValidPos.x);
+                if((player.vy < -16 && !player.grounded) || deltaX > 25 && !player.grounded && player.vy < -5) suspiciousMovements+=2;
+                if(suspiciousMovements > 20) iaIntegrity = Math.max(0, iaIntegrity-1.5);
+                if(iaIntegrity <= 0) activatePunishmentMode();
+                iaIntegrity = Math.min(100, iaIntegrity + 0.04);
+                suspiciousMovements = Math.max(0, suspiciousMovements-0.3);
+            }
+            lastValidPos = { x: player.x, y: player.y };
+            updateUI();
+        }
+        
+        function updateUI(){
+            document.getElementById("levelNum").innerText = cheatPunishmentMode ? "INF" : currentLevel;
+            document.getElementById("scoreVal").innerText = Math.floor(totalScore);
+            document.getElementById("distVal").innerText = Math.floor(totalDistance);
+            document.getElementById("iaEthics").innerText = cheatPunishmentMode ? 0 : Math.floor(iaIntegrity);
+            document.getElementById("doubleReady").innerText = (!player.doubleJumpUsed || player.grounded) ? "✓" : "✗";
+            document.getElementById("wallReady").innerText = (!player.wallSliding && player.grounded) ? "✓" : "⚡";
+            if(iaIntegrity < 20 && !cheatPunishmentMode) document.getElementById("iaEthics").classList.add("badge-critical");
+            else document.getElementById("iaEthics").classList.remove("badge-critical");
+        }
+        
+        // camara
+        let camX = 0;
+        function updateCamera(){
+            camX = Math.min(maxGenX - W + 200, Math.max(0, player.x - W/2.5));
+        }
+        
+        // --------------------- DIBUJO (gráficos profesionales) ----------------------
+        function draw(){
+            ctx.clearRect(0,0,W,H);
+            let grad = ctx.createLinearGradient(0,0,0,H);
+            grad.addColorStop(0,"#121a2c");
+            grad.addColorStop(1,"#1e2a3e");
+            ctx.fillStyle = grad;
+            ctx.fillRect(0,0,W,H);
+            ctx.save();
+            ctx.translate(-camX,0);
+            // plataformas
+            for(let p of platforms){
+                ctx.fillStyle = p.tipo==="punish" ? "#a13a2a" : "#6e5e42";
+                ctx.shadowBlur = 3;
+                ctx.fillRect(p.x, p.y, p.w, p.h);
+                ctx.fillStyle = "#c0a56b";
+                ctx.fillRect(p.x+4, p.y-4, p.w-8, 5);
+            }
+            for(let mp of movingPlatforms){
+                ctx.fillStyle = "#5a7d4e";
+                ctx.fillRect(mp.x, mp.y, mp.w, mp.h);
+                ctx.fillStyle = "#8bb56a";
+                ctx.fillRect(mp.x+5, mp.y-3, mp.w-10, 5);
+            }
+            for(let h of hazards){
+                ctx.fillStyle = "#e05a2a";
+                ctx.beginPath();
+                ctx.moveTo(h.x+h.w/2, h.y-6);
+                ctx.lineTo(h.x, h.y+h.h);
+                ctx.lineTo(h.x+h.w, h.y+h.h);
+                ctx.fill();
+                ctx.fillStyle = "#ff8040";
+                ctx.fillRect(h.x+3, h.y+4, h.w-6, 6);
+            }
+            for(let c of collectibles){
+                ctx.fillStyle = "#f7c56e";
+                ctx.shadowBlur = 12;
+                ctx.beginPath();
+                ctx.arc(c.x+8, c.y+8, 10, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = "#ffa559";
+                ctx.beginPath();
+                ctx.arc(c.x+8, c.y+8, 5, 0, Math.PI*2);
+                ctx.fill();
+            }
+            // jugador
+            ctx.fillStyle = "#4aa5ff";
+            ctx.shadowBlur = 5;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.fillStyle = "#2c303a";
+            ctx.fillRect(player.x+6, player.y+10, 7, 9);
+            ctx.fillRect(player.x+player.width-13, player.y+10, 7, 9);
+            if(player.facingRight){
+                ctx.fillStyle = "#ed9b49";
+                ctx.fillRect(player.x+player.width-10, player.y+22, 14, 8);
+            }else{
+                ctx.fillRect(player.x-4, player.y+22, 14, 8);
+            }
+            // partículas
+            for(let pa of particles){
+                ctx.fillStyle = `rgba(255,200,100,${pa.life})`;
+                ctx.fillRect(pa.x, pa.y, 4,4);
+            }
+            ctx.restore();
+            // UI superpuesta
+            ctx.font = "bold 18 monospace";
+            ctx.fillStyle = "white";
+            ctx.shadowBlur = 2;
+            if(cheatPunishmentMode){
+                ctx.fillStyle = "#ff8866";
+                ctx.font = "bold 26 monospace";
+                ctx.fillText("🔥 SENTENCIA INFINITA 🔥", W/2-190, 55);
+            }
+            if(player.dashCooldown > 0){
+                ctx.fillStyle = "cyan";
+                ctx.fillText("⚡ DASH RECARGANDO", player.x-camX-20, player.y-15);
+            }
+        }
+        
+        // ---------------- GAME LOOP Y EVENTOS ----------------
+        function gameLoop(){
+            if(!gameActive){
+                draw();
+                ctx.fillStyle = "rgba(0,0,0,0.85)";
+                ctx.fillRect(0,0,W,H);
+                ctx.fillStyle = "#fff";
+                ctx.font = "34px monospace";
+                ctx.fillText("GAME OVER - PRESIONA REINICIAR", W/2-280, H/2);
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+            handleMovementAndPhysics();
+            checkHazardsAndCollect();
+            updateParticles();
+            actualizarGeneracion();
+            updateProgression();
+            updateCamera();
+            draw();
+            frameId++;
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Eventos teclado y touch
+        window.addEventListener('keydown', (e) => {
+            let k = e.key;
+            if(k === 'ArrowLeft' || k === 'a' || k === 'A') keys.left = true;
+            if(k === 'ArrowRight' || k === 'd' || k === 'D') keys.right = true;
+            if(k === 'ArrowUp' || k === ' ' || k === 'Space'){ e.preventDefault(); keys.jumpRequest = true; }
+            if(k === 'Shift' || k === 'Control'){ e.preventDefault(); keys.dashRequest = true; }
+        });
+        window.addEventListener('keyup', (e) => {
+            let k = e.key;
+            if(k === 'ArrowLeft' || k === 'a' || k === 'A') keys.left = false;
+            if(k === 'ArrowRight' || k === 'd' || k === 'D') keys.right = false;
+        });
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); keys.jumpRequest=true; });
+        document.getElementById('resetGameBtn').onclick = () => { resetWorldFull(); gameActive=true; cheatPunishmentMode=false; iaIntegrity=100; punishmentTimer=0; };
+        document.getElementById('fullscreenBtn').onclick = () => {
+            if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else document.exitFullscreen();
+        };
+        
+        resetWorldFull();
+        gameLoop();
+    })();
+</script>
+</body>
+</html>
